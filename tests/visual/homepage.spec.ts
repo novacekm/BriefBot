@@ -10,8 +10,8 @@ import { test, expect } from '@playwright/test'
  * npm run test:e2e -- --update-snapshots
  */
 
-test.describe('Homepage Visual Regression', () => {
-  test('should match desktop screenshot', async ({ page }) => {
+test.describe('Homepage Visual Regression @visual', () => {
+  test('should match desktop screenshot @visual', async ({ page }) => {
     await page.goto('/')
 
     // Wait for page to be fully loaded
@@ -24,7 +24,7 @@ test.describe('Homepage Visual Regression', () => {
     })
   })
 
-  test('should match mobile screenshot', async ({ page }) => {
+  test('should match mobile screenshot @visual', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/')
@@ -37,7 +37,7 @@ test.describe('Homepage Visual Regression', () => {
     })
   })
 
-  test('should match tablet screenshot', async ({ page }) => {
+  test('should match tablet screenshot @visual', async ({ page }) => {
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 })
     await page.goto('/')
