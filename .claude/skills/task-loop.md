@@ -10,9 +10,10 @@ Orchestrates an intelligent task loop that:
 2. **Selects** the highest-value ready task
 3. **Plans** using parallel agents, **persists** plan to file
 4. **Clears** context for maximum execution space
-5. **Executes** the task (implementation, tests, commit)
-6. **Reflects** on impact and updates related issues
-7. **Loops** until exit conditions are met
+5. **Executes** on feature branch, creates PR
+6. **Reviews** PR with `/pr-review`, auto-merges if passing
+7. **Reflects** on impact and updates related issues
+8. **Loops** until exit conditions are met
 
 ## The Task Loop Process
 
@@ -112,19 +113,55 @@ This resets context while preserving:
 - .claude/rules/* (reloaded)
 - The plan file on disk
 
-### Phase 4: EXECUTE
+### Phase 4: EXECUTE (on feature branch)
 
 **Fresh Context Execution:**
 
 After clearing, execute with maximum available context:
 
+**Step 4a: Create Feature Branch**
+```bash
+# Create and switch to feature branch
+git checkout -b issue-<number>-<short-title>
+
+# Example: issue-3-minio-storage
+```
+
+**Step 4b: Implement**
 1. Read the persisted plan: `docs/plans/issue-<number>.md`
 2. Implement each step from the plan
 3. Write/update tests
-4. Run tests and ensure they pass
-5. Commit with issue reference: `fix(scope): description\n\nCloses #X`
-6. Push to GitHub
-7. Delete plan file (optional): `rm docs/plans/issue-<number>.md`
+4. Run tests locally and ensure they pass
+5. Commit changes (can be multiple commits)
+
+**Step 4c: Push and Create PR**
+```bash
+# Push feature branch
+git push -u origin issue-<number>-<short-title>
+
+# Create PR with auto-close reference
+gh pr create \
+  --title "<type>(<scope>): <description>" \
+  --body "## Summary
+<what this PR does>
+
+## Changes
+- <change 1>
+- <change 2>
+
+## Testing
+- [ ] Unit tests pass
+- [ ] E2E tests pass
+- [ ] Manual testing done
+
+Closes #<issue-number>" \
+  --label "<domain>"
+```
+
+**Step 4d: Return to Master**
+```bash
+git checkout master
+```
 
 **Commit Message Format:**
 ```
@@ -135,9 +172,59 @@ After clearing, execute with maximum available context:
 Closes #<issue-number>
 ```
 
-### Phase 5: REFLECT
+### Phase 5: REVIEW & MERGE
 
-After completing a task, reflect on its impact:
+**Automated PR Review:**
+
+After the PR is created, invoke the `/pr-review` skill:
+
+**Step 5a: Review the PR**
+```bash
+# Get PR details
+gh pr view <pr-number> --json title,body,files,additions,deletions
+
+# Review changes
+gh pr diff <pr-number>
+```
+
+**Step 5b: Run Review Checklist**
+The pr-review skill checks:
+- [ ] Code follows project patterns
+- [ ] No security vulnerabilities
+- [ ] Tests are included
+- [ ] No `any` types in TypeScript
+- [ ] Acceptance criteria met
+- [ ] CI checks pass
+
+**Step 5c: Decision**
+
+If ALL checks pass:
+```bash
+# Approve the PR
+gh pr review <pr-number> --approve --body "Automated review: All checks passed."
+
+# Merge (squash) when CI passes
+gh pr merge <pr-number> --squash --auto --delete-branch
+```
+
+If issues found:
+```bash
+# Request changes
+gh pr review <pr-number> --request-changes --body "Issues found:
+- <issue 1>
+- <issue 2>"
+
+# Create follow-up issue or fix inline
+```
+
+**Auto-Merge Requirements:**
+- All CI checks must pass (GitHub Actions)
+- PR must be approved
+- Branch protection rules enforced
+
+### Phase 6: REFLECT
+
+After the PR is merged, reflect on its impact:
 
 **Update Related Issues:**
 ```bash
@@ -168,7 +255,7 @@ gh issue list --search "Blocked by: #<completed-issue>" --json number,title
    - If P0 revealed more P0s, address those first
    - If P1 is now blocking others, bump priority
 
-### Phase 6: NEXT?
+### Phase 7: NEXT?
 
 **Exit Conditions:**
 - No more "ready" issues

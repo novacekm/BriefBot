@@ -16,9 +16,16 @@ This directory contains Claude Code agents and skills for BriefBot development.
 │   ├── reviewer/     # Code review and quality standards
 │   ├── ml-expert/    # OCR, translation, and RAG
 │   └── infra/        # Docker and deployment
-└── skills/           # Invokable skills for specific tasks
-    ├── plan.md       # Feature planning and brainstorming
-    └── review.md     # Code review
+├── skills/           # Invokable skills for specific tasks
+│   ├── plan.md       # Feature planning and brainstorming
+│   ├── review.md     # Code review
+│   ├── task-loop.md  # Automated task orchestration
+│   └── pr-review.md  # PR review and auto-merge
+├── rules/            # Rules that persist across /clear
+│   ├── context-management.md
+│   ├── parallelization.md
+│   └── task-execution.md
+└── settings.json     # Permissions and configuration
 ```
 
 ## Agents
@@ -69,6 +76,8 @@ Claude: [Spawns planner agent to handle planning session]
 |-------|---------|-------------|
 | **plan** | Interactive feature planning and specification creation | `/plan` or describe feature idea |
 | **review** | Comprehensive code review following BriefBot standards | `/review` or request code review |
+| **task-loop** | Automated task orchestration for overnight runs | `/task-loop` or "run task loop" |
+| **pr-review** | Automated PR review with approval and merge | `/pr-review <number>` or "review PR #X" |
 
 ### How to Use Skills
 
