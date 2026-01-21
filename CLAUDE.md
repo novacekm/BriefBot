@@ -34,80 +34,79 @@
 - **Vitest** (unit testing)
 - **Testing Library** (component testing)
 
-## Specialized Agents
+## Claude Code Skills
 
-BriefBot development follows a multi-agent architecture. Each agent has specific expertise:
+BriefBot uses Claude Code skills for development assistance:
 
-### 1. **Planner** (`.claude/agents/planner.md`) ⭐ START HERE
-- Feature brainstorming and discovery
+### Skills (`.claude/skills/`)
+Invoke these for specific tasks:
+
+**plan** - Feature planning and brainstorming ⭐ START HERE
 - Interactive planning sessions
 - Asking clarifying questions
 - Proposing multiple solution options
+- Creating feature specifications
+
+**review** - Code review
+- Comprehensive code quality review
+- Security and privacy validation
+- Accessibility checks
+- Test coverage verification
+
+### Development Guides (`docs/guides/`)
+Reference these for detailed context:
+
+**planner-guide.md** - Planning methodology
 - User-centered design thinking
+- Swiss context considerations
 - Screenshot-based planning
 
-### 2. **Architect** (`.claude/agents/architect.md`)
+**architect-guide.md** - Technical architecture
 - Next.js 15 App Router patterns
-- System design and architecture
-- API design (Server Actions, Route Handlers)
+- System design and API design
 - Performance optimization
-- File structure and organization
 
-### 3. **UX Designer** (`.claude/agents/ux-designer.md`)
-- Swiss International Style minimalism
+**ux-designer-guide.md** - Design standards
+- Swiss International Style
 - shadcn/ui component library
-- Mobile-first responsive design
-- Accessibility (WCAG 2.1 AA)
-- Typography and spacing systems
+- Mobile-first, accessibility (WCAG 2.1 AA)
 
-### 4. **Persistence** (`.claude/agents/persistence.md`)
+**persistence-guide.md** - Database and storage
 - Prisma ORM and schema design
 - PostgreSQL optimization
-- MinIO object storage integration
-- Database migrations and seeding
-- Connection pooling and performance
+- MinIO object storage
 
-### 5. **Security** (`.claude/agents/security.md`)
+**security-guide.md** - Security and compliance
 - Swiss nFADP compliance
 - Zero-trust architecture
 - PII protection and encryption
-- Authentication and authorization
-- Security headers and rate limiting
 
-### 6. **Infrastructure** (`.claude/agents/infra.md`)
+**infra-guide.md** - Infrastructure
 - Docker Compose setup
-- Local development environment
 - CI/CD pipelines
 - Deployment strategies
-- Monitoring and observability
 
-### 7. **Tester** (`.claude/agents/tester.md`)
+**tester-guide.md** - Testing
 - TDD practices
 - Playwright E2E testing
-- Component and unit testing
 - Test coverage requirements
-- Quality assurance
 
-### 8. **Reviewer** (`.claude/agents/reviewer.md`)
+**reviewer-guide.md** - Code review
 - Code review standards
-- Design consistency
 - TypeScript best practices
 - ESLint and Prettier configuration
-- PR review process
 
-### 9. **ML Expert** (`.claude/agents/ml-expert.md`)
+**ml-expert-guide.md** - AI/ML features
 - OCR with GPT-4 Vision
 - Translation with Claude
-- Document understanding and extraction
 - RAG for document search
-- Prompt engineering for Swiss documents
 
 ## Project Structure
 
 ```
 BriefBot/
 ├── .claude/
-│   └── agents/              # Agent personas
+│   └── skills/              # Invokable skills (plan, review)
 ├── app/                     # Next.js 15 App Router
 │   ├── (auth)/              # Authentication routes
 │   ├── (main)/              # Main application routes
@@ -131,6 +130,9 @@ BriefBot/
 │   ├── components/          # Component tests
 │   └── fixtures/            # Test fixtures
 ├── docs/
+│   ├── guides/              # Development guides (planner, architect, etc.)
+│   ├── specs/               # Feature specifications
+│   ├── screenshots/         # Screenshot documentation
 │   ├── ADR/                 # Architecture Decision Records
 │   ├── COMPLIANCE/          # nFADP compliance docs
 │   ├── SECURITY/            # Security documentation
@@ -241,21 +243,24 @@ npm run lint               # ESLint
 npm run type-check         # TypeScript check
 ```
 
-## Consulting Agents
+## Using Skills and Guides
 
-When working on specific tasks, consult the relevant agent:
+### Skills (Invoke for Tasks)
 
-- **New feature/idea?** → **ALWAYS start with Planner agent** for brainstorming ⭐
-- **Technical design?** → Consult **Architect** after planning
-- **UI component?** → Check **UX Designer** guidelines
-- **Database change?** → Consult **Persistence** agent
-- **Security concern?** → Review **Security** checklist
-- **Docker issue?** → See **Infrastructure** agent
-- **Writing tests?** → Follow **Tester** patterns
-- **Code review?** → Use **Reviewer** checklist
-- **AI/OCR feature?** → Consult **ML Expert**
+- **New feature/idea?** → **Use `plan` skill** for brainstorming ⭐
+- **Code review?** → **Use `review` skill** before committing
 
-**Important:** For ANY new feature, always start with the **Planner agent** to brainstorm, ask questions, and propose solutions BEFORE implementation. See `CLAUDE_CODE_WORKFLOW.md` for the complete process.
+### Guides (Reference for Context)
+
+- **Technical design?** → Read `architect-guide.md`
+- **UI component?** → Read `ux-designer-guide.md`
+- **Database change?** → Read `persistence-guide.md`
+- **Security concern?** → Read `security-guide.md`
+- **Docker issue?** → Read `infra-guide.md`
+- **Writing tests?** → Read `tester-guide.md`
+- **AI/OCR feature?** → Read `ml-expert-guide.md`
+
+**Important:** For ANY new feature, always start with the **plan skill** to brainstorm, ask questions, and propose solutions BEFORE implementation. See `CLAUDE_CODE_WORKFLOW.md` for the complete process.
 
 ## Key Resources
 

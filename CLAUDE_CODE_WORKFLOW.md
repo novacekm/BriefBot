@@ -6,10 +6,10 @@ This document defines how to work effectively with Claude Code (AI-assisted deve
 
 ## Core Principles
 
-1. **Plan Before Code**: Always start with the Planner agent
+1. **Plan Before Code**: Always start with the `plan` skill
 2. **Visual Feedback**: Use screenshots to communicate UI issues
 3. **Iterative Development**: Build → Test → Screenshot → Refine
-4. **Agent-Guided**: Consult specialized agents for each domain
+4. **Skills and Guides**: Use skills for tasks, consult guides for standards
 
 ## Workflow Phases
 
@@ -25,7 +25,7 @@ This document defines how to work effectively with Claude Code (AI-assisted deve
           │
           ▼
    ┌──────────────┐
-   │   PLANNING   │  Planner agent brainstorms
+   │   PLANNING   │  `plan` skill brainstorms
    │              │  Propose 2-3 solutions
    │              │  User selects approach
    └──────┬───────┘
@@ -72,7 +72,7 @@ This document defines how to work effectively with Claude Code (AI-assisted deve
 **Example:**
 > "I want users to be able to upload documents and see OCR results"
 
-### Claude (Planner Agent) Responds
+### Claude (`plan` skill) Responds
 
 **Asks Clarifying Questions:**
 1. "Should users upload one document at a time, or multiple?"
@@ -200,7 +200,7 @@ As a Swiss resident, I want to upload official mail documents (PDF/images) so th
 
 ### Step 1: Write Tests First
 
-**Following Tester Agent Guidelines:**
+**Following Tester Guide:**
 
 ```typescript
 // tests/e2e/document-upload.spec.ts
@@ -242,7 +242,7 @@ test.describe('Document Upload', () => {
 
 ### Step 2: Implement Feature
 
-**Following Architect & UX Designer Guidelines:**
+**Following Architect & UX Designer Guides:**
 - Server Components for data fetching
 - Client Components for interactivity
 - Server Actions for mutations
@@ -407,9 +407,7 @@ test('upload page visual regression', async ({ page }) => {
    - Visual regression tests
    - Screenshot testing completed
 
-   Screenshots: docs/screenshots/upload-feature/
-
-   Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+   Screenshots: docs/screenshots/upload-feature/"
    ```
 
 3. **Update backlog**
@@ -457,32 +455,32 @@ docs/screenshots/
 │   └── README.md (description of each)
 ```
 
-## Agent Consultation Flow
+## Skills and Guides Consultation Flow
 
-### Which Agent When?
+### Which Skill or Guide When?
 
 ```
 Feature Idea
     ↓
-Planner Agent (brainstorm, clarify, propose)
+`plan` skill (brainstorm, clarify, propose)
     ↓
-Architect Agent (technical design)
+Architect guide (technical design)
     ↓
-UX Designer Agent (visual design, accessibility)
+UX Designer guide (visual design, accessibility)
     ↓
-Security Agent (privacy, Swiss nFADP compliance)
+Security guide (privacy, Swiss nFADP compliance)
     ↓
-Persistence Agent (database, storage)
+Persistence guide (database, storage)
     ↓
-Tester Agent (test strategy)
+Tester guide (test strategy)
     ↓
 BUILD (Claude implements)
     ↓
-Reviewer Agent (code review)
+`review` skill (code review)
     ↓
 User Tests (screenshots)
     ↓
-Planner Agent (analyze feedback, refine)
+`plan` skill (analyze feedback, refine)
     ↓
 COMMIT
 ```
@@ -493,11 +491,11 @@ COMMIT
 > "I want to add document translation"
 
 **Claude:**
-> "Let me consult the Planner agent for feature brainstorming..."
+> "Let me use the `plan` skill for feature brainstorming..."
 >
-> [Reads `.claude/agents/planner.md`]
+> [Invokes `plan` skill]
 >
-> **Planner Agent Response:**
+> **`plan` skill Response:**
 > "Let me ask some clarifying questions:
 > 1. Should translation happen automatically after OCR, or on-demand?
 > 2. Which languages should we support? (All Swiss languages + English?)
@@ -510,7 +508,7 @@ COMMIT
 
 ### Do's
 
-✅ **Start with planning** - Use Planner agent first
+✅ **Start with planning** - Use `plan` skill first
 ✅ **Be specific** - "The button is too small" is better than "Fix the button"
 ✅ **Use screenshots** - A picture is worth 1000 words
 ✅ **Test incrementally** - Small changes, frequent testing
@@ -530,7 +528,7 @@ COMMIT
 **User:**
 > "I want to add a feature where users can delete uploaded documents"
 
-**Claude (Planner):**
+**Claude (`plan` skill):**
 > "Let me help you plan this feature. I have some questions:
 >
 > 1. Should delete be immediate, or with a confirmation dialog?
@@ -544,7 +542,7 @@ COMMIT
 **User:**
 > "Immediate deletion is fine, but show a confirmation dialog. Hard delete from both database and MinIO. No undo needed. One at a time is fine for now."
 
-**Claude (Planner):**
+**Claude (`plan` skill):**
 > "Perfect! Here's the specification:
 >
 > [Creates feature spec]
@@ -555,7 +553,7 @@ COMMIT
 > "Yes, please"
 
 **Claude:**
-> "I'll now consult Architect, Security, and Persistence agents...
+> "I'll now consult Architect, Security, and Persistence guides...
 >
 > [Implements feature with TDD]
 >
@@ -595,11 +593,11 @@ COMMIT
 ## Summary
 
 This workflow ensures:
-- ✅ Well-planned features (Planner agent)
-- ✅ High-quality implementation (Specialist agents)
+- ✅ Well-planned features (`plan` skill)
+- ✅ High-quality implementation (Specialist guides)
 - ✅ Visual correctness (Screenshot testing)
 - ✅ Iterative refinement (Feedback loop)
 - ✅ Documentation (Screenshots + specs)
 - ✅ Regression prevention (Visual tests)
 
-**Remember:** Planning takes 20% of the time but saves 80% of rework. Always start with the Planner agent!
+**Remember:** Planning takes 20% of the time but saves 80% of rework. Always start with the `plan` skill!

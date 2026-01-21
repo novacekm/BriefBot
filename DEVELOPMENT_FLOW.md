@@ -334,9 +334,7 @@ This document defines the **Test-Build-Review** development loop for BriefBot. F
    - Add batch upload to MinIO
    - Update UI to show multiple uploads
 
-   Closes #123
-
-   Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+   Closes #123"
    ```
 
    **Commit Types:**

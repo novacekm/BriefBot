@@ -1,0 +1,38 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# Closes #<issue>
+
+# Type: feat, fix, docs, style, refactor, test, chore
+# Scope: Component or area affected (e.g., upload, auth, db)
+# Subject: Imperative mood, lowercase, no period, max 50 chars
+#
+# Body: Explain WHAT and WHY (not HOW). Wrap at 72 chars.
+# Use bullet points for multiple changes:
+# - Change 1
+# - Change 2
+# - Change 3
+#
+# Footer: Reference issues with "Closes #123" or "Fixes #456"
+#
+# Examples:
+#
+# feat(upload): add multi-file upload support
+#
+# - Allow selecting multiple files at once
+# - Display progress for each file
+# - Add batch upload to MinIO
+# - Update UI to show multiple uploads
+#
+# Closes #123
+#
+# ---
+#
+# fix(security): prevent SQL injection in document query
+#
+# - Add Zod validation for documentId
+# - Use parameterized queries
+# - Add authorization check
+#
+# SECURITY: Critical fix for SQL injection vulnerability
