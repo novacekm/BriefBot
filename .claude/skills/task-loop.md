@@ -8,9 +8,11 @@
 Orchestrates an intelligent task loop that:
 1. **Analyzes** all open GitHub issues
 2. **Selects** the highest-value ready task
-3. **Executes** the task (implementation, tests, commit)
-4. **Reflects** on impact and updates related issues
-5. **Loops** until exit conditions are met
+3. **Plans** using parallel agents, **persists** plan to file
+4. **Clears** context for maximum execution space
+5. **Executes** the task (implementation, tests, commit)
+6. **Reflects** on impact and updates related issues
+7. **Loops** until exit conditions are met
 
 ## The Task Loop Process
 
@@ -57,25 +59,72 @@ gh issue list --repo novacekm/BriefBot --state open --json number,title,labels,b
 - Close with comment explaining why
 - Loop back to ANALYZE
 
-### Phase 3: EXECUTE
+### Phase 3: PLAN & PERSIST
 
-**Execution Steps:**
+**Context-Aware Execution Pattern:**
+
+The key to efficient overnight runs is the **Plan → Persist → Clear → Execute** pattern:
+
+**Step 3a: Plan the Task**
 1. Add "in-progress" label to issue
 2. Remove "ready" label
 3. Read issue description and acceptance criteria
-4. Consult relevant agent (based on domain label):
-   - `frontend` → `ux-designer` agent
-   - `backend` → `architect` agent
-   - `database` → `persistence` agent
-   - `ai-ml` → `ml-expert` agent
-   - `infra` → `infra` agent
-   - `auth` → `security` agent
-5. Plan implementation (use `plan` skill if complex)
-6. Implement the feature/fix
-7. Write/update tests
-8. Run tests and ensure they pass
-9. Commit with issue reference: `fix(scope): description\n\nCloses #X`
-10. Push to GitHub
+4. **Spawn planning agents in PARALLEL** (based on domain labels):
+   - `frontend` → spawn `ux-designer` agent
+   - `backend` → spawn `architect` agent
+   - `database` → spawn `persistence` agent
+   - `ai-ml` → spawn `ml-expert` agent
+   - `infra` → spawn `infra` agent
+   - `auth` → spawn `security` agent
+   - Multiple domains → spawn multiple agents in ONE message
+5. Consolidate agent recommendations into implementation plan
+
+**Step 3b: Persist the Plan**
+Write plan to `docs/plans/issue-<number>.md`:
+```markdown
+# Issue #<number>: <title>
+
+## Summary
+<consolidated from planning agents>
+
+## Implementation Steps
+1. <step from architect/ux-designer>
+2. <step 2>
+...
+
+## Files to Modify
+- <paths identified during planning>
+
+## Acceptance Criteria
+- [ ] <from GitHub issue>
+
+## Technical Notes
+<decisions made, gotchas identified>
+```
+
+**Step 3c: Clear Context**
+```
+/clear
+```
+
+This resets context while preserving:
+- CLAUDE.md (reloaded)
+- .claude/rules/* (reloaded)
+- The plan file on disk
+
+### Phase 4: EXECUTE
+
+**Fresh Context Execution:**
+
+After clearing, execute with maximum available context:
+
+1. Read the persisted plan: `docs/plans/issue-<number>.md`
+2. Implement each step from the plan
+3. Write/update tests
+4. Run tests and ensure they pass
+5. Commit with issue reference: `fix(scope): description\n\nCloses #X`
+6. Push to GitHub
+7. Delete plan file (optional): `rm docs/plans/issue-<number>.md`
 
 **Commit Message Format:**
 ```
@@ -86,7 +135,7 @@ gh issue list --repo novacekm/BriefBot --state open --json number,title,labels,b
 Closes #<issue-number>
 ```
 
-### Phase 4: REFLECT
+### Phase 5: REFLECT
 
 After completing a task, reflect on its impact:
 
@@ -119,7 +168,7 @@ gh issue list --search "Blocked by: #<completed-issue>" --json number,title
    - If P0 revealed more P0s, address those first
    - If P1 is now blocking others, bump priority
 
-### Phase 5: NEXT?
+### Phase 6: NEXT?
 
 **Exit Conditions:**
 - No more "ready" issues
@@ -234,13 +283,32 @@ Found 12 open issues:
 Selected: #3 [P0-critical] "Set up Supabase authentication"
 Reason: Highest priority, unblocks #5 and #8
 
-[EXECUTE] Working on #3...
-- Consulting security agent for auth patterns
-- Implementing Supabase auth integration
-- Writing tests
+[PLAN] Planning implementation...
+- Spawning security agent (auth domain) - PARALLEL
+- Spawning architect agent (backend) - PARALLEL
+- Agents returned recommendations
+- Consolidated into implementation plan
+
+[PERSIST] Saving plan...
+- Written to docs/plans/issue-3.md
+- Contains 8 implementation steps
+- Lists 5 files to modify
+
+[CLEAR] Clearing context...
+- Running /clear
+- Context reset, rules reloaded
+- Plan file persists on disk
+
+[EXECUTE] Working on #3 (fresh context)...
+- Reading docs/plans/issue-3.md
+- Implementing step 1/8: Install Supabase packages
+- Implementing step 2/8: Configure environment
+- ...
+- Running tests
 - Tests passed
 - Committing: "feat(auth): set up Supabase authentication\n\nCloses #3"
 - Pushed to GitHub
+- Deleting docs/plans/issue-3.md
 
 [REFLECT] Analyzing impact...
 - #5 is now unblocked (was blocked by #3)
