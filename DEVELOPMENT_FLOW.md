@@ -346,21 +346,52 @@ This document defines the **Test-Build-Review** development loop for BriefBot. F
    - `test`: Adding tests
    - `chore`: Maintenance
 
-4. **Push to GitHub**
+4. **Create Feature Branch & Push**
    ```bash
-   git push origin master
+   # NEVER push directly to master - create a feature branch
+   git checkout -b feature/<short-description>
+   # Or for issue-based work:
+   git checkout -b issue-<number>-<short-title>
+
+   # Push to feature branch
+   git push -u origin feature/<short-description>
    ```
 
-5. **Monitor CI/CD**
+5. **Create Pull Request**
+   ```bash
+   gh pr create \
+     --title "feat(upload): add multi-file upload support" \
+     --body "## Summary
+   - Allow selecting multiple files at once
+   - Display progress for each file
+
+   Closes #123"
+   ```
+
+6. **Get PR Approved & Merge**
+   ```bash
+   # Wait for CI checks
+   gh pr checks <pr-number> --watch
+
+   # Get approval (human or Claude via /pr-review)
+   # Then merge via PR (never direct push to master)
+   gh pr merge <pr-number> --squash --auto --delete-branch
+   ```
+
+7. **Monitor CI/CD**
    - Check GitHub Actions status
    - Verify all checks pass
    - Review deployment logs
 
 ### Outputs
-- [ ] Changes committed
-- [ ] Pushed to GitHub
+- [ ] Changes committed to feature branch
+- [ ] PR created
+- [ ] PR approved
+- [ ] PR merged (via squash merge)
 - [ ] CI/CD passing
 - [ ] No deployment errors
+
+**IMPORTANT**: Direct pushes to master are FORBIDDEN. All changes must go through PRs.
 
 ---
 
@@ -469,11 +500,13 @@ This document defines the **Test-Build-Review** development loop for BriefBot. F
 - [ ] No commented code
 - [ ] No TODOs (move to BACKLOG.json)
 
-### Before Pushing
+### Before Creating PR
 - [ ] Commits are atomic and meaningful
 - [ ] Commit messages follow convention
 - [ ] No secrets in code
 - [ ] No large files (use Git LFS if needed)
+- [ ] Changes are on a feature branch (NEVER push to master)
+- [ ] PR description clearly explains the changes
 
 ### Before Deploying
 - [ ] All CI checks pass
@@ -487,19 +520,25 @@ This document defines the **Test-Build-Review** development loop for BriefBot. F
 ## Emergency Procedures
 
 ### Hotfix Process
-1. Create hotfix branch from master
+1. Create hotfix branch from master: `git checkout -b hotfix/<description>`
 2. Minimal fix only (no refactoring)
 3. Write test that reproduces bug
 4. Fix bug
-5. Deploy immediately
-6. Post-mortem in `docs/INCIDENTS/`
+5. **Create PR** (even for hotfixes - no direct pushes to master)
+6. **Fast-track approval** (Claude can approve urgent fixes)
+7. Merge via PR with `gh pr merge --squash`
+8. Post-mortem in `docs/INCIDENTS/`
+
+**NOTE**: Even hotfixes must go through PRs. The PR can be fast-tracked but direct pushes to master are never allowed.
 
 ### Rollback Process
 1. Identify last good commit
-2. Revert on master
-3. Deploy immediately
-4. Investigate root cause
-5. Plan proper fix
+2. Create revert branch: `git checkout -b revert/<description>`
+3. Create revert commit: `git revert <bad-commit>`
+4. **Create PR for the revert**
+5. Fast-track approval and merge
+6. Investigate root cause
+7. Plan proper fix (via normal PR process)
 
 ---
 

@@ -1,5 +1,19 @@
 # Task Execution Workflow
 
+## CRITICAL: PR-Based Development is MANDATORY
+
+**Direct pushes to master are FORBIDDEN.** All changes must go through Pull Requests.
+
+### The Non-Negotiable Rules:
+1. **NEVER** run `git push origin master` - this is forbidden
+2. **ALWAYS** create a feature branch for every change
+3. **ALWAYS** create a PR for every change
+4. **ALWAYS** get PR approval before merging (admin or Claude on admin's behalf)
+
+Violating these rules will break the development workflow and potentially destabilize the codebase.
+
+---
+
 ## The Plan → Persist → Clear → Execute Pattern
 
 For each task from the backlog, follow this workflow:
@@ -71,14 +85,20 @@ The fresh context means:
 - Full context available for implementation
 - Focused on the specific task
 
-### Step 5: VERIFY & CLOSE
+### Step 5: VERIFY, PR & CLOSE
 
 After implementation:
 1. Run tests
 2. Verify acceptance criteria
 3. Commit with issue reference
-4. Close GitHub issue
-5. Delete plan file (optional)
+4. **Push to feature branch** (NEVER to master)
+5. **Create Pull Request** with `gh pr create`
+6. **Get PR approved** (by admin or Claude via `/pr-review`)
+7. **Merge via PR** with `gh pr merge --squash --auto`
+8. GitHub issue auto-closes via "Closes #X" in PR
+9. Delete plan file (optional)
+
+**REMINDER**: Direct pushes to master are forbidden. Always use the PR workflow.
 
 ## Why This Works
 

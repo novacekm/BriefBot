@@ -179,6 +179,8 @@ For automatic merge, ALL must be true:
 3. No merge conflicts
 4. PR is not marked "needs-human-review"
 5. PR is not a draft
+6. **PR has been approved** (by admin or Claude on admin's behalf)
+7. **Changes came through a feature branch** (never direct to master)
 
 ## Example Review
 
@@ -218,11 +220,64 @@ Claude: Reviewing PR #15...
 
 ## Safety Rails
 
-1. **Never force merge** - Always use `--auto` to wait for CI
-2. **Never skip CI** - All checks must pass
-3. **Escalate uncertainty** - When in doubt, request human review
-4. **Document decisions** - Always explain why in review comment
-5. **Preserve branch** - Only delete after successful merge
+1. **NEVER push directly to master** - All changes MUST go through PRs
+2. **Never force merge** - Always use `--auto` to wait for CI
+3. **Never skip CI** - All checks must pass
+4. **Escalate uncertainty** - When in doubt, request human review
+5. **Document decisions** - Always explain why in review comment
+6. **Preserve branch** - Only delete after successful merge
+
+### Pre-Review Safety Check
+
+Before reviewing ANY PR, verify:
+```bash
+# Ensure we're not accidentally on master with uncommitted changes
+git status
+
+# Ensure we're reviewing a PR, not pushing to master
+gh pr view <number> --json baseRefName --jq '.baseRefName'
+# Must target 'master' as base, changes come FROM feature branch
+```
+
+**CRITICAL**: If you ever find yourself about to run `git push origin master`, STOP immediately. This is forbidden. Create a feature branch and PR instead.
+
+## Claude's PR Approval Authority
+
+Claude can approve and merge PRs on behalf of the admin (novacekm) under these conditions:
+
+### Automatic Approval Permitted When:
+1. **All CI checks pass** - lint, type-check, test, build
+2. **Code review checklist passes** - no security issues, follows patterns
+3. **Tests are included** - for new functionality
+4. **No "needs-human-review" label** - not flagged for manual review
+5. **PR is from task-loop** - automated overnight work
+
+### Human Review Required When:
+1. Security-sensitive changes (auth, data handling)
+2. Architecture changes (new patterns, major refactors)
+3. Configuration changes (env vars, CI/CD)
+4. Database migrations (schema changes)
+5. Dependency updates (especially major versions)
+6. Any PR with "needs-human-review" label
+
+### Approval Command
+```bash
+# Claude approves on behalf of admin
+gh pr review <number> --approve --body "$(cat <<'EOF'
+## Automated Review: APPROVED
+
+Approved by Claude on behalf of @novacekm.
+
+**Review Summary:**
+- Code quality: Passed
+- Security: No issues found
+- Tests: Included and passing
+- Architecture: Follows patterns
+
+**Approval Authority:** Delegated for automated task-loop execution.
+EOF
+)"
+```
 
 ## Integration with Task Loop
 

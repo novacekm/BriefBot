@@ -289,8 +289,10 @@ Closes #<issue-number>" \
   --label "<domain>"
 ```
 
-**Step 4g: Return to Master**
+**Step 4g: Return to Master (Read-Only)**
 ```bash
+# Return to master for the next task selection
+# NOTE: Never push directly to master - all changes go through PRs
 git checkout master
 ```
 
@@ -555,11 +557,23 @@ done
 
 ## Safety Rails
 
-1. **Never force push** - All commits are normal pushes
-2. **Never modify main directly** - Create branches for large changes
-3. **Never skip tests** - All changes must pass tests
-4. **Never commit secrets** - Validate no .env or credentials
-5. **Always reference issues** - Every commit closes an issue
+1. **NEVER push directly to master** - All changes MUST go through Pull Requests
+2. **ALWAYS create feature branches** - Create `issue-<number>-<short-title>` branches for all work
+3. **ALWAYS create PRs** - Every change requires a PR, no exceptions
+4. **Never force push** - All commits are normal pushes
+5. **Never skip tests** - All changes must pass tests
+6. **Never commit secrets** - Validate no .env or credentials
+7. **Always reference issues** - Every commit closes an issue
+
+### PR Approval Process
+
+Only the admin (novacekm) can approve PRs. However, Claude can approve PRs on behalf of the admin using the `gh` CLI when:
+- All CI checks pass
+- Code review checklist passes
+- No security vulnerabilities detected
+- The admin has delegated approval authority for automated task loops
+
+**Direct pushes to master are FORBIDDEN** - this is enforced by branch protection rules and programmatically by Claude.
 
 ## Metrics Tracked
 
