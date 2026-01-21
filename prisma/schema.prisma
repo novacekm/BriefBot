@@ -1,0 +1,78 @@
+// BriefBot Database Schema
+// Privacy-first OCR utility for Swiss residents
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model for authentication (via Supabase)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents Document[]
+
+  @@map("users")
+}
+
+// Document model for uploaded files and OCR results
+model Document {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Original file metadata
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String @unique // MinIO object key
+
+  // OCR results
+  language      String? // de, fr, it
+  extractedText String? @db.Text
+  confidence    Float?
+
+  // Processing state
+  status                DocumentStatus @default(PENDING)
+  processingStartedAt   DateTime?
+  processingCompletedAt DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations Translation[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("documents")
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Translation model for translated document text
+model Translation {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  targetLanguage String // de, fr, it, en
+  translatedText String @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([documentId, targetLanguage])
+  @@map("translations")
+}
