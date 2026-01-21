@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: BriefBot Documentation
+    url: https://github.com/novacekm/BriefBot/blob/master/CLAUDE.md
+    about: Check the project documentation before creating an issue

@@ -1,0 +1,70 @@
+name: Task
+description: A general development task (refactor, chore, docs, etc.)
+title: "[Task]: "
+labels: ["chore"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Create a development task for BriefBot.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be done?
+      placeholder: "We need to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true for this task to be considered complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any issues this depends on, or "None"
+      placeholder: |
+        Blocked by: #123
+        Or: None
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Task Type
+      description: What type of task is this?
+      options:
+        - refactor
+        - chore
+        - documentation
+        - performance
+        - security
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Domain
+      description: Which area of the codebase does this affect?
+      options:
+        - frontend
+        - backend
+        - database
+        - ai-ml
+        - infra
+        - auth
+        - multiple
+    validations:
+      required: true
