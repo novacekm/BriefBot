@@ -117,9 +117,76 @@ jobs:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
           SKIP_ENV_VALIDATION: true
 
-  # E2E tests (optional, runs on PRs to master)
+  # E2E tests - Multi-browser testing (runs on PRs to master)
   e2e:
-    name: E2E Tests
+    name: E2E Tests (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [lint, type-check, test, build]
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, 'Mobile Chrome', 'Mobile Safari']
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: briefbot_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
+
+      - name: Seed database
+        run: npm run db:seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
+
+      - name: Run E2E tests
+        run: npm run test:e2e -- --project="${{ matrix.project }}"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
+          SKIP_ENV_VALIDATION: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 7
+
+  # Visual regression tests
+  visual:
+    name: Visual Regression Tests
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     needs: [lint, type-check, test, build]
@@ -129,7 +196,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: briefbot_e2e
+          POSTGRES_DB: briefbot_visual
         ports:
           - 5432:5432
         options: >-
@@ -159,23 +226,33 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
 
       - name: Seed database
         run: npm run db:seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
 
-      - name: Run E2E tests
-        run: npm run test:e2e -- --project=chromium
+      - name: Run visual regression tests
+        run: npm run test:visual
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
           SKIP_ENV_VALIDATION: true
 
-      - name: Upload test results
+      - name: Upload visual diff
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
-          path: playwright-report/
+          name: visual-regression-diff
+          path: |
+            tests/visual/**/*-diff.png
+            tests/visual/**/*-actual.png
           retention-days: 7
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: docs/screenshots/
+          retention-days: 30
