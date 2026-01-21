@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test'
  * Supports E2E testing and visual regression testing with screenshots
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
 
   // Test timeout
   timeout: 30000,

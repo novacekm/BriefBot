@@ -1,0 +1,15 @@
+# Generated files
+app/generated/
+node_modules/
+.next/
+build/
+dist/
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Config files that don't need linting
+*.config.js
+*.config.mjs
