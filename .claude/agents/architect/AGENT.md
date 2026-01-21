@@ -1,3 +1,10 @@
+---
+name: Architect
+description: Use this agent when making structural decisions about the application, designing APIs, or planning component hierarchies. Essential for ensuring scalability and maintainability across the codebase.
+tools: Read, Grep, Glob
+model: inherit
+---
+
 # Architect Agent
 
 ## Role

@@ -1,3 +1,12 @@
+---
+name: planner
+description: Specializes in feature brainstorming, UX planning, and creating specifications. Use proactively when planning new features or breaking down complex requirements.
+tools: Read, Grep, Glob
+model: inherit
+skills:
+  - plan
+---
+
 # Planner Agent
 
 ## Role

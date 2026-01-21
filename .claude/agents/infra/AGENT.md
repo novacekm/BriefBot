@@ -1,3 +1,10 @@
+---
+name: Infrastructure
+description: Use this agent to set up development environments, manage Docker containers, and design deployment pipelines. Essential for maintaining reproducible builds and reliable deployments.
+tools: Read, Grep, Glob
+model: inherit
+---
+
 # Infrastructure Agent
 
 ## Role

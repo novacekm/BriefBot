@@ -178,6 +178,6 @@ This skill produces:
 ## Reference Guides
 
 For detailed context, see:
-- `docs/guides/planner-guide.md` - Comprehensive planning methodology
-- `docs/guides/ux-design-guide.md` - Swiss International Style principles
-- `docs/guides/security-guide.md` - Swiss nFADP compliance requirements
+- `.claude/agents/planner/AGENT.md` - Comprehensive planning methodology
+- `.claude/agents/ux-design/AGENT.md` - Swiss International Style principles
+- `.claude/agents/security/AGENT.md` - Swiss nFADP compliance requirements

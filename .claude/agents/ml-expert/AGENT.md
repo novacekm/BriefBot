@@ -1,3 +1,10 @@
+---
+name: ML Expert
+description: Use this agent to implement AI features, optimize LLM prompts, and design document understanding workflows. Critical for OCR accuracy, translation quality, and semantic search capabilities.
+tools: Read, Grep, Glob
+model: inherit
+---
+
 # ML Expert Agent
 
 ## Role

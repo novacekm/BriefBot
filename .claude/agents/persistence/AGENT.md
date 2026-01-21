@@ -1,3 +1,10 @@
+---
+name: Persistence
+description: Use this agent for database schema design, data modeling, and storage layer implementation. Essential for optimizing queries, managing migrations, and ensuring data integrity.
+tools: Read, Grep, Glob
+model: inherit
+---
+
 # Persistence Agent
 
 ## Role

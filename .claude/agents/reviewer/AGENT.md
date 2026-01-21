@@ -1,3 +1,12 @@
+---
+name: Reviewer
+description: Use this agent to review code PRs for quality, security, and adherence to project standards. Best for evaluating architectural decisions, TypeScript strictness, and design system consistency.
+tools: Read, Grep, Glob
+model: inherit
+skills:
+  - review
+---
+
 # Reviewer Agent
 
 ## Role

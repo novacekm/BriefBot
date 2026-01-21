@@ -216,7 +216,7 @@ After fixing P0 and P1, you'll be ready to commit.
 ## Reference Guides
 
 For detailed standards, see:
-- `docs/guides/reviewer-guide.md` - Complete review standards
-- `docs/guides/architecture-guide.md` - Next.js 15 patterns
-- `docs/guides/security-guide.md` - Security requirements
-- `docs/guides/ux-design-guide.md` - Design standards
+- `.claude/agents/reviewer/AGENT.md` - Complete review standards
+- `.claude/agents/architecture/AGENT.md` - Next.js 15 patterns
+- `.claude/agents/security/AGENT.md` - Security requirements
+- `.claude/agents/ux-design/AGENT.md` - Design standards

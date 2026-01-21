@@ -1,3 +1,10 @@
+---
+name: Security
+description: Use this agent to implement security measures, ensure data protection compliance, and review authentication/authorization logic. Critical for protecting user data and meeting Swiss nFADP requirements.
+tools: Read, Grep, Glob
+model: inherit
+---
+
 # Security Agent
 
 ## Role

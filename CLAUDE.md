@@ -34,9 +34,9 @@
 - **Vitest** (unit testing)
 - **Testing Library** (component testing)
 
-## Claude Code Skills
+## Claude Code Configuration
 
-BriefBot uses Claude Code skills for development assistance:
+BriefBot uses Claude Code agents and skills for development assistance:
 
 ### Skills (`.claude/skills/`)
 Invoke these for specific tasks:
@@ -53,50 +53,50 @@ Invoke these for specific tasks:
 - Accessibility checks
 - Test coverage verification
 
-### Development Guides (`docs/guides/`)
-Reference these for detailed context:
+### Agents (`.claude/agents/`)
+Specialized subagents with focused system prompts:
 
-**planner-guide.md** - Planning methodology
+**planner** - Planning methodology
 - User-centered design thinking
 - Swiss context considerations
 - Screenshot-based planning
 
-**architect-guide.md** - Technical architecture
+**architect** - Technical architecture
 - Next.js 15 App Router patterns
 - System design and API design
 - Performance optimization
 
-**ux-designer-guide.md** - Design standards
+**ux-designer** - Design standards
 - Swiss International Style
 - shadcn/ui component library
 - Mobile-first, accessibility (WCAG 2.1 AA)
 
-**persistence-guide.md** - Database and storage
+**persistence** - Database and storage
 - Prisma ORM and schema design
 - PostgreSQL optimization
 - MinIO object storage
 
-**security-guide.md** - Security and compliance
+**security** - Security and compliance
 - Swiss nFADP compliance
 - Zero-trust architecture
 - PII protection and encryption
 
-**infra-guide.md** - Infrastructure
+**infra** - Infrastructure
 - Docker Compose setup
 - CI/CD pipelines
 - Deployment strategies
 
-**tester-guide.md** - Testing
+**tester** - Testing
 - TDD practices
 - Playwright E2E testing
 - Test coverage requirements
 
-**reviewer-guide.md** - Code review
+**reviewer** - Code review
 - Code review standards
 - TypeScript best practices
 - ESLint and Prettier configuration
 
-**ml-expert-guide.md** - AI/ML features
+**ml-expert** - AI/ML features
 - OCR with GPT-4 Vision
 - Translation with Claude
 - RAG for document search
@@ -106,6 +106,7 @@ Reference these for detailed context:
 ```
 BriefBot/
 ├── .claude/
+│   ├── agents/              # Specialized subagents (planner, architect, etc.)
 │   └── skills/              # Invokable skills (plan, review)
 ├── app/                     # Next.js 15 App Router
 │   ├── (auth)/              # Authentication routes
@@ -130,7 +131,6 @@ BriefBot/
 │   ├── components/          # Component tests
 │   └── fixtures/            # Test fixtures
 ├── docs/
-│   ├── guides/              # Development guides (planner, architect, etc.)
 │   ├── specs/               # Feature specifications
 │   ├── screenshots/         # Screenshot documentation
 │   ├── ADR/                 # Architecture Decision Records
@@ -147,12 +147,12 @@ BriefBot/
 See `DEVELOPMENT_FLOW.md` for the complete development process.
 
 **Quick reference:**
-1. **Design** → Consult Architect & UX Designer
+1. **Design** → Spawn `architect` and `ux-designer` agents
 2. **Implement** → Write code following agent guidelines
-3. **Test** → Write tests (TDD) with Tester guidance
-4. **Review** → Self-review with Reviewer checklist
-5. **Security** → Verify compliance with Security agent
-6. **Deploy** → Follow Infrastructure guidelines
+3. **Test** → Write tests (TDD) with `tester` agent
+4. **Review** → Self-review with `reviewer` agent or `/review` skill
+5. **Security** → Verify compliance with `security` agent
+6. **Deploy** → Follow `infra` agent guidelines
 
 ## Core Principles
 
@@ -243,24 +243,24 @@ npm run lint               # ESLint
 npm run type-check         # TypeScript check
 ```
 
-## Using Skills and Guides
+## Using Skills and Agents
 
 ### Skills (Invoke for Tasks)
 
-- **New feature/idea?** → **Use `plan` skill** for brainstorming ⭐
-- **Code review?** → **Use `review` skill** before committing
+- **New feature/idea?** → **Use `plan` skill** or spawn `planner` agent ⭐
+- **Code review?** → **Use `review` skill** or spawn `reviewer` agent
 
-### Guides (Reference for Context)
+### Agents (Spawn for Specialized Tasks)
 
-- **Technical design?** → Read `architect-guide.md`
-- **UI component?** → Read `ux-designer-guide.md`
-- **Database change?** → Read `persistence-guide.md`
-- **Security concern?** → Read `security-guide.md`
-- **Docker issue?** → Read `infra-guide.md`
-- **Writing tests?** → Read `tester-guide.md`
-- **AI/OCR feature?** → Read `ml-expert-guide.md`
+- **Technical design?** → Spawn `architect` agent
+- **UI component?** → Spawn `ux-designer` agent
+- **Database change?** → Spawn `persistence` agent
+- **Security concern?** → Spawn `security` agent
+- **Docker issue?** → Spawn `infra` agent
+- **Writing tests?** → Spawn `tester` agent
+- **AI/OCR feature?** → Spawn `ml-expert` agent
 
-**Important:** For ANY new feature, always start with the **plan skill** to brainstorm, ask questions, and propose solutions BEFORE implementation. See `CLAUDE_CODE_WORKFLOW.md` for the complete process.
+**Important:** For ANY new feature, always start with the **`plan` skill** or **`planner` agent** to brainstorm, ask questions, and propose solutions BEFORE implementation. See `CLAUDE_CODE_WORKFLOW.md` for the complete process.
 
 ## Key Resources
 
@@ -292,4 +292,4 @@ npm run type-check         # TypeScript check
 
 ---
 
-*This document is the entry point for all Claude AI sessions. When starting a new task, read this file and consult the relevant agent persona.*
+*This document is the entry point for all Claude AI sessions. When starting a new task, read this file and spawn the relevant specialized agent.*
