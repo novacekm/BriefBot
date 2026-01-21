@@ -127,19 +127,136 @@ git checkout -b issue-<number>-<short-title>
 # Example: issue-3-minio-storage
 ```
 
-**Step 4b: Implement**
-1. Read the persisted plan: `docs/plans/issue-<number>.md`
-2. Implement each step from the plan
-3. Write/update tests
-4. Run tests locally and ensure they pass
-5. Commit changes (can be multiple commits)
+**Step 4b: TDD Implementation**
 
-**Step 4c: Push and Create PR**
+Follow Test-Driven Development:
+
+1. **Read the plan**: `docs/plans/issue-<number>.md`
+
+2. **Write tests FIRST** (Red phase):
+   ```bash
+   # Unit tests for business logic
+   # File: tests/unit/<feature>.test.ts
+
+   # Component tests for UI
+   # File: tests/components/<Component>.test.tsx
+
+   # E2E tests for user flows
+   # File: tests/e2e/<feature>.spec.ts
+   ```
+
+3. **Run tests - should FAIL**:
+   ```bash
+   npm run test -- --watch
+   ```
+
+4. **Implement feature** (Green phase):
+   - Write minimal code to make tests pass
+   - Follow the plan steps
+
+5. **Refactor** (Refactor phase):
+   - Clean up code
+   - Ensure no duplication
+   - Verify patterns followed
+
+**Step 4c: Testing & QA**
+
+Run comprehensive testing:
+
+1. **Unit Tests**:
+   ```bash
+   npm run test:unit
+   ```
+
+2. **Type Check**:
+   ```bash
+   npm run type-check
+   ```
+
+3. **Lint**:
+   ```bash
+   npm run lint
+   ```
+
+4. **E2E Tests** (multi-browser):
+   ```bash
+   # Desktop browsers
+   npm run test:e2e -- --project=chromium
+   npm run test:e2e -- --project=firefox
+   npm run test:e2e -- --project=webkit
+
+   # Mobile simulators
+   npm run test:e2e -- --project="Mobile Chrome"
+   npm run test:e2e -- --project="Mobile Safari"
+   npm run test:e2e -- --project="iPad"
+   ```
+
+5. **Visual Regression Tests**:
+   ```bash
+   # Capture screenshots and compare
+   npm run test:visual
+
+   # Update baselines if intentional changes
+   npm run test:visual -- --update-snapshots
+   ```
+
+6. **Accessibility Tests**:
+   ```bash
+   npm run test:a11y
+   ```
+
+**Step 4d: Screenshot QA**
+
+For UI changes, capture and verify screenshots:
+
+1. **Capture key states**:
+   - Initial/empty state
+   - Loading state
+   - Success state
+   - Error state
+   - Mobile view (375px)
+   - Tablet view (768px)
+   - Desktop view (1280px)
+
+2. **Save to documentation**:
+   ```bash
+   mkdir -p docs/screenshots/issue-<number>
+   # Screenshots saved by Playwright to this directory
+   ```
+
+3. **Visual checklist**:
+   - [ ] Layout correct on all viewports
+   - [ ] Colors match design system
+   - [ ] Typography consistent
+   - [ ] Touch targets >= 44x44px (mobile)
+   - [ ] Focus indicators visible
+   - [ ] No layout shifts
+   - [ ] Images optimized
+
+**Step 4e: Commit**
+
+After all tests pass:
+```bash
+# Stage changes
+git add .
+
+# Commit with descriptive message
+git commit -m "<type>(<scope>): <description>
+
+- <detail 1>
+- <detail 2>
+
+Tests: unit, e2e, visual"
+```
+
+Can make multiple commits during implementation.
+
+**Step 4f: Push and Create PR**
 ```bash
 # Push feature branch
 git push -u origin issue-<number>-<short-title>
 
-# Create PR with auto-close reference
+# Create PR with comprehensive testing checklist
 gh pr create \
   --title "<type>(<scope>): <description>" \
   --body "## Summary
@@ -149,16 +266,30 @@ gh pr create \
 - <change 1>
 - <change 2>
 
-## Testing
-- [ ] Unit tests pass
-- [ ] E2E tests pass
-- [ ] Manual testing done
+## Testing Completed
+- [x] Unit tests pass
+- [x] Type check passes
+- [x] Lint passes
+- [x] E2E tests pass (Chrome, Firefox, Safari)
+- [x] Mobile tests pass (iOS, Android simulators)
+- [x] Visual regression tests pass
+- [x] Accessibility tests pass
+
+## Screenshots
+<link to docs/screenshots/issue-<number>/ or inline images>
+
+## QA Checklist
+- [x] Tested on desktop (1280px+)
+- [x] Tested on tablet (768px)
+- [x] Tested on mobile (375px)
+- [x] Keyboard navigation works
+- [x] Screen reader tested
 
 Closes #<issue-number>" \
   --label "<domain>"
 ```
 
-**Step 4d: Return to Master**
+**Step 4g: Return to Master**
 ```bash
 git checkout master
 ```
