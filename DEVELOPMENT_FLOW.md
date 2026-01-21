@@ -49,42 +49,65 @@ This document defines the **Test-Build-Review** development loop for BriefBot. F
 ## Phase 1: PLAN
 
 ### Objectives
-- Understand the feature or fix requirements
-- Design the technical approach
-- Identify affected components
+- Understand the feature or fix requirements through discovery and brainstorming
+- Design the technical approach with user experience in mind
+- Create detailed specification before implementation
 
 ### Steps
 
-1. **Read Requirement**
-   - Understand what needs to be built or fixed
-   - Identify user value and success criteria
+1. **Consult Planner Agent (FIRST STEP - Always Start Here!)**
+   - Read `.claude/agents/planner.md`
+   - Conduct interactive planning session:
+     - Ask clarifying questions
+     - Explore different approaches
+     - Propose 2-3 solution options
+     - Get user feedback and selection
+   - Create feature specification in `/docs/specs/[feature-name].md`
+   - Define screenshot test scenarios
+   - Document acceptance criteria
 
 2. **Consult Architect**
    - Read `.claude/agents/architect.md`
    - Determine if this is a Server Component or Client Component
    - Plan data flow (Server Action vs API route)
    - Consider Next.js 15 patterns
+   - Review technical feasibility of selected approach
 
 3. **Consult UX Designer** (for UI features)
    - Read `.claude/agents/ux-designer.md`
    - Ensure design follows Swiss International Style
-   - Verify accessibility requirements
+   - Verify accessibility requirements (WCAG 2.1 AA)
    - Check mobile-first approach
+   - Plan visual states (loading, error, empty, success)
 
 4. **Consult Persistence** (for data changes)
    - Read `.claude/agents/persistence.md`
    - Plan database schema changes
    - Design Prisma queries
    - Consider MinIO storage if needed
+   - Estimate storage requirements
 
-5. **Document Decision**
+5. **Consult Security** (for all features)
+   - Read `.claude/agents/security.md`
+   - Review Swiss nFADP compliance requirements
+   - Verify PII handling
+   - Check authentication/authorization needs
+   - Identify security risks
+
+6. **Document Decision**
+   - Create or update feature spec in `/docs/specs/`
    - Update relevant ADR in `docs/ADR/` if architectural
    - Add task to `docs/BACKLOG.json`
+   - Define screenshot test scenarios
 
 ### Outputs
-- [ ] Clear understanding of requirements
+- [ ] Interactive planning session completed with Planner agent
+- [ ] Feature specification created (`/docs/specs/[feature-name].md`)
+- [ ] User stories and acceptance criteria defined
+- [ ] Screenshot test scenarios planned
 - [ ] Technical approach documented
 - [ ] Relevant agents consulted
+- [ ] Security and privacy reviewed
 - [ ] ADR created (if needed)
 
 ---
