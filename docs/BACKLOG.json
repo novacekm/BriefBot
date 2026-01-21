@@ -1,0 +1,497 @@
+{
+  "metadata": {
+    "project": "BriefBot",
+    "version": "0.1.0",
+    "lastUpdated": "2024-01-01",
+    "description": "Privacy-first OCR utility for Swiss residents"
+  },
+  "priorities": {
+    "P0": "Critical - Must have for MVP",
+    "P1": "High - Important for launch",
+    "P2": "Medium - Nice to have",
+    "P3": "Low - Future enhancement"
+  },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "priority": "P0",
+      "status": "in-progress",
+      "title": "Next.js 15 Initialization",
+      "description": "Initialize Next.js 15 app with TypeScript, Tailwind CSS, and App Router",
+      "agent": "architect",
+      "subtasks": [
+        "Create Next.js 15 app with create-next-app",
+        "Configure TypeScript strict mode",
+        "Set up Tailwind CSS",
+        "Configure App Router structure",
+        "Set up path aliases (@/*)"
+      ],
+      "acceptanceCriteria": [
+        "Next.js 15 app running on localhost:3000",
+        "TypeScript strict mode enabled",
+        "Tailwind CSS working",
+        "App Router structure in place"
+      ],
+      "estimatedEffort": "1 hour",
+      "dependencies": []
+    },
+    {
+      "id": "TASK-002",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Docker Compose Infrastructure",
+      "description": "Set up PostgreSQL and MinIO with Docker Compose for local development",
+      "agent": "infra",
+      "subtasks": [
+        "Create docker-compose.yml",
+        "Configure PostgreSQL 16 container",
+        "Configure MinIO container",
+        "Set up health checks",
+        "Create .env.example"
+      ],
+      "acceptanceCriteria": [
+        "PostgreSQL running on localhost:5432",
+        "MinIO running on localhost:9000",
+        "Health checks passing",
+        ".env.example documented"
+      ],
+      "estimatedEffort": "1 hour",
+      "dependencies": []
+    },
+    {
+      "id": "TASK-003",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Prisma Setup and Database Schema",
+      "description": "Initialize Prisma, define schema for User and Document models",
+      "agent": "persistence",
+      "subtasks": [
+        "Install Prisma",
+        "Initialize Prisma with PostgreSQL",
+        "Define User model",
+        "Define Document model",
+        "Define Translation model",
+        "Create initial migration",
+        "Set up Prisma client"
+      ],
+      "acceptanceCriteria": [
+        "Prisma schema defined",
+        "Initial migration created",
+        "Prisma client generating successfully",
+        "Can connect to local PostgreSQL"
+      ],
+      "estimatedEffort": "2 hours",
+      "dependencies": ["TASK-002"]
+    },
+    {
+      "id": "TASK-004",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Supabase Authentication Setup",
+      "description": "Integrate Supabase for authentication and authorization",
+      "agent": "security",
+      "subtasks": [
+        "Install Supabase client libraries",
+        "Configure Supabase environment variables",
+        "Create authentication utilities",
+        "Set up Row-Level Security policies",
+        "Create requireAuth helper"
+      ],
+      "acceptanceCriteria": [
+        "Supabase client configured",
+        "Authentication working",
+        "RLS policies in place",
+        "Authorization helpers created"
+      ],
+      "estimatedEffort": "3 hours",
+      "dependencies": ["TASK-001", "TASK-003"]
+    },
+    {
+      "id": "TASK-005",
+      "priority": "P0",
+      "status": "pending",
+      "title": "shadcn/ui Component Library Setup",
+      "description": "Initialize shadcn/ui and add core components",
+      "agent": "ux-designer",
+      "subtasks": [
+        "Initialize shadcn/ui",
+        "Configure theme (Swiss style)",
+        "Add core components (Button, Input, Card, etc.)",
+        "Set up typography system",
+        "Configure color palette"
+      ],
+      "acceptanceCriteria": [
+        "shadcn/ui initialized",
+        "Core components added",
+        "Theme configured with Swiss International Style",
+        "Typography scale defined"
+      ],
+      "estimatedEffort": "2 hours",
+      "dependencies": ["TASK-001"]
+    },
+    {
+      "id": "TASK-006",
+      "priority": "P0",
+      "status": "pending",
+      "title": "MinIO Storage Integration",
+      "description": "Set up MinIO client for document storage",
+      "agent": "persistence",
+      "subtasks": [
+        "Install MinIO client",
+        "Create storage utilities",
+        "Implement uploadDocument function",
+        "Implement getDocument function",
+        "Implement deleteDocument function",
+        "Set up bucket creation and policies"
+      ],
+      "acceptanceCriteria": [
+        "MinIO client configured",
+        "Can upload documents",
+        "Can retrieve documents",
+        "Can delete documents",
+        "Bucket policies set correctly"
+      ],
+      "estimatedEffort": "2 hours",
+      "dependencies": ["TASK-002"]
+    },
+    {
+      "id": "TASK-007",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Document Upload UI",
+      "description": "Create document upload interface with drag-and-drop",
+      "agent": "ux-designer",
+      "subtasks": [
+        "Create upload page",
+        "Implement file input component",
+        "Add drag-and-drop functionality",
+        "Add file validation (size, type)",
+        "Implement upload progress UI",
+        "Add error handling UI"
+      ],
+      "acceptanceCriteria": [
+        "Users can select files",
+        "Drag-and-drop works",
+        "File validation working",
+        "Progress indicator shown",
+        "Errors displayed clearly"
+      ],
+      "estimatedEffort": "4 hours",
+      "dependencies": ["TASK-005"]
+    },
+    {
+      "id": "TASK-008",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Document Upload Server Action",
+      "description": "Implement server action for document upload",
+      "agent": "architect",
+      "subtasks": [
+        "Create uploadDocument server action",
+        "Add Zod validation",
+        "Integrate MinIO upload",
+        "Create database record",
+        "Add authentication check",
+        "Add authorization check",
+        "Implement error handling"
+      ],
+      "acceptanceCriteria": [
+        "Server action handles upload",
+        "File saved to MinIO",
+        "Database record created",
+        "Auth/authz enforced",
+        "Errors handled gracefully"
+      ],
+      "estimatedEffort": "3 hours",
+      "dependencies": ["TASK-004", "TASK-006"]
+    },
+    {
+      "id": "TASK-009",
+      "priority": "P0",
+      "status": "pending",
+      "title": "OCR Integration with GPT-4 Vision",
+      "description": "Implement OCR using OpenAI GPT-4 Vision API",
+      "agent": "ml-expert",
+      "subtasks": [
+        "Install Vercel AI SDK",
+        "Configure OpenAI client",
+        "Implement extractTextFromDocument",
+        "Add language detection",
+        "Add confidence scoring",
+        "Implement error handling",
+        "Add retry logic"
+      ],
+      "acceptanceCriteria": [
+        "Can extract text from images",
+        "Language detected (de/fr/it)",
+        "Confidence score returned",
+        "Errors handled gracefully",
+        "Swiss document formats supported"
+      ],
+      "estimatedEffort": "4 hours",
+      "dependencies": ["TASK-001"]
+    },
+    {
+      "id": "TASK-010",
+      "priority": "P0",
+      "status": "pending",
+      "title": "OCR Processing Queue",
+      "description": "Implement background OCR processing for uploaded documents",
+      "agent": "architect",
+      "subtasks": [
+        "Create processDocument server action",
+        "Integrate OCR function",
+        "Update document status",
+        "Store extracted text",
+        "Handle processing failures",
+        "Add processing queue logic"
+      ],
+      "acceptanceCriteria": [
+        "Documents processed in background",
+        "OCR results saved to database",
+        "Status updates reflected in UI",
+        "Failures handled and logged"
+      ],
+      "estimatedEffort": "3 hours",
+      "dependencies": ["TASK-008", "TASK-009"]
+    },
+    {
+      "id": "TASK-011",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Document List View",
+      "description": "Create UI to view uploaded documents",
+      "agent": "ux-designer",
+      "subtasks": [
+        "Create documents page",
+        "Implement document list component",
+        "Add document card component",
+        "Show processing status",
+        "Add loading states",
+        "Add empty state"
+      ],
+      "acceptanceCriteria": [
+        "Users can see their documents",
+        "Processing status visible",
+        "Loading states implemented",
+        "Empty state shown when no documents"
+      ],
+      "estimatedEffort": "3 hours",
+      "dependencies": ["TASK-005"]
+    },
+    {
+      "id": "TASK-012",
+      "priority": "P0",
+      "status": "pending",
+      "title": "Document Detail View",
+      "description": "Create UI to view OCR results for a document",
+      "agent": "ux-designer",
+      "subtasks": [
+        "Create document detail page",
+        "Display original document",
+        "Display extracted text",
+        "Show document metadata",
+        "Add copy-to-clipboard functionality",
+        "Implement responsive design"
+      ],
+      "acceptanceCriteria": [
+        "Users can view document details",
+        "OCR text displayed",
+        "Can copy text to clipboard",
+        "Responsive on mobile"
+      ],
+      "estimatedEffort": "4 hours",
+      "dependencies": ["TASK-011"]
+    },
+    {
+      "id": "TASK-013",
+      "priority": "P1",
+      "status": "pending",
+      "title": "Translation with Claude",
+      "description": "Implement document translation using Anthropic Claude",
+      "agent": "ml-expert",
+      "subtasks": [
+        "Install Anthropic SDK",
+        "Implement translateDocument function",
+        "Support de/fr/it/en translations",
+        "Store translations in database",
+        "Add translation UI",
+        "Implement caching"
+      ],
+      "acceptanceCriteria": [
+        "Can translate documents",
+        "All Swiss languages supported",
+        "Translations cached",
+        "UI for translation selection"
+      ],
+      "estimatedEffort": "5 hours",
+      "dependencies": ["TASK-010"]
+    },
+    {
+      "id": "TASK-014",
+      "priority": "P1",
+      "status": "pending",
+      "title": "Document Deletion",
+      "description": "Implement document deletion with cascading cleanup",
+      "agent": "security",
+      "subtasks": [
+        "Create deleteDocument server action",
+        "Delete from database (cascade)",
+        "Delete from MinIO",
+        "Add confirmation dialog",
+        "Add authorization check",
+        "Implement soft delete option"
+      ],
+      "acceptanceCriteria": [
+        "Users can delete documents",
+        "Database record deleted",
+        "File deleted from MinIO",
+        "Confirmation required",
+        "Authorization enforced"
+      ],
+      "estimatedEffort": "2 hours",
+      "dependencies": ["TASK-011"]
+    },
+    {
+      "id": "TASK-015",
+      "priority": "P1",
+      "status": "pending",
+      "title": "E2E Test Suite",
+      "description": "Implement Playwright E2E tests for critical flows",
+      "agent": "tester",
+      "subtasks": [
+        "Set up Playwright",
+        "Configure test environment",
+        "Write upload flow test",
+        "Write document view test",
+        "Write deletion test",
+        "Add CI integration"
+      ],
+      "acceptanceCriteria": [
+        "Playwright configured",
+        "Critical flows tested",
+        "Tests pass in CI",
+        "Coverage meets threshold"
+      ],
+      "estimatedEffort": "6 hours",
+      "dependencies": ["TASK-010", "TASK-011", "TASK-012"]
+    },
+    {
+      "id": "TASK-016",
+      "priority": "P1",
+      "status": "pending",
+      "title": "Swiss nFADP Compliance Documentation",
+      "description": "Document data processing and create privacy policy",
+      "agent": "security",
+      "subtasks": [
+        "Create data processing record",
+        "Draft privacy policy (DE/FR/IT)",
+        "Document data retention policy",
+        "Implement data export functionality",
+        "Implement account deletion",
+        "Create compliance checklist"
+      ],
+      "acceptanceCriteria": [
+        "Data processing documented",
+        "Privacy policy created",
+        "Users can export data",
+        "Users can delete account",
+        "Compliance checklist complete"
+      ],
+      "estimatedEffort": "8 hours",
+      "dependencies": ["TASK-004"]
+    },
+    {
+      "id": "TASK-017",
+      "priority": "P2",
+      "status": "pending",
+      "title": "Document Search",
+      "description": "Implement full-text search for documents",
+      "agent": "persistence",
+      "subtasks": [
+        "Add PostgreSQL full-text search index",
+        "Create search server action",
+        "Implement search UI",
+        "Add search filters",
+        "Optimize search performance"
+      ],
+      "acceptanceCriteria": [
+        "Users can search documents",
+        "Search is fast (<500ms)",
+        "Filters work correctly",
+        "Results relevance ranked"
+      ],
+      "estimatedEffort": "5 hours",
+      "dependencies": ["TASK-011"]
+    },
+    {
+      "id": "TASK-018",
+      "priority": "P2",
+      "status": "pending",
+      "title": "RAG-based Document Q&A",
+      "description": "Implement semantic search and question answering",
+      "agent": "ml-expert",
+      "subtasks": [
+        "Add pgvector extension to PostgreSQL",
+        "Generate embeddings for documents",
+        "Implement semantic search",
+        "Create Q&A interface",
+        "Optimize RAG pipeline"
+      ],
+      "acceptanceCriteria": [
+        "Users can ask questions",
+        "Answers based on documents",
+        "Semantic search working",
+        "Fast response times"
+      ],
+      "estimatedEffort": "8 hours",
+      "dependencies": ["TASK-010"]
+    },
+    {
+      "id": "TASK-019",
+      "priority": "P2",
+      "status": "pending",
+      "title": "Mobile PWA Features",
+      "description": "Add Progressive Web App capabilities",
+      "agent": "ux-designer",
+      "subtasks": [
+        "Add service worker",
+        "Create web app manifest",
+        "Implement offline support",
+        "Add install prompt",
+        "Test on iOS and Android"
+      ],
+      "acceptanceCriteria": [
+        "App installable on mobile",
+        "Works offline (cached content)",
+        "Install prompt shown",
+        "PWA audits pass"
+      ],
+      "estimatedEffort": "6 hours",
+      "dependencies": ["TASK-012"]
+    },
+    {
+      "id": "TASK-020",
+      "priority": "P3",
+      "status": "pending",
+      "title": "Batch Document Upload",
+      "description": "Support uploading multiple documents at once",
+      "agent": "architect",
+      "subtasks": [
+        "Update upload UI for multiple files",
+        "Implement batch upload logic",
+        "Add progress tracking per file",
+        "Handle partial failures",
+        "Optimize upload performance"
+      ],
+      "acceptanceCriteria": [
+        "Users can select multiple files",
+        "All files uploaded",
+        "Progress shown per file",
+        "Partial failures handled"
+      ],
+      "estimatedEffort": "4 hours",
+      "dependencies": ["TASK-008"]
+    }
+  ]
+}
