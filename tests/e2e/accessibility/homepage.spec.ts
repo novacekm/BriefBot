@@ -33,20 +33,17 @@ test.describe('Homepage Accessibility @a11y', () => {
     const header = page.locator('header')
     await expect(header).toBeVisible()
 
-    // Desktop nav is hidden on mobile (uses Sheet instead)
+    // For unauthenticated users, protected nav is hidden
     if (!isMobile) {
-      // Check nav landmark exists on desktop
+      // Nav should not be visible when not authenticated
       const nav = page.locator('header nav')
-      await expect(nav).toBeVisible()
+      await expect(nav).toHaveCount(0)
 
-      // Check all links have accessible names
-      const navLinks = page.locator('header nav a')
-      const count = await navLinks.count()
-      for (let i = 0; i < count; i++) {
-        const link = navLinks.nth(i)
-        const accessibleName = await link.getAttribute('aria-label') || await link.textContent()
-        expect(accessibleName).toBeTruthy()
-      }
+      // Sign in link should be accessible
+      const signInLink = page.locator('header a[href="/login"]')
+      await expect(signInLink).toBeVisible()
+      const signInText = await signInLink.textContent()
+      expect(signInText).toBeTruthy()
     } else {
       // On mobile, check hamburger menu is accessible
       const menuButton = page.locator('button[aria-label="Open menu"]')

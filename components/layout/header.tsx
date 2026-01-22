@@ -59,18 +59,22 @@ export function Header({ user }: HeaderProps) {
             <SheetHeader>
               <SheetTitle className="text-left">BriefBot</SheetTitle>
             </SheetHeader>
-            <Separator className="my-4" />
-            <nav className="flex flex-col space-y-3">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-sm font-medium transition-colors hover:text-primary"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
+            {user && (
+              <>
+                <Separator className="my-4" />
+                <nav className="flex flex-col space-y-3">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="text-sm font-medium transition-colors hover:text-primary"
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </nav>
+              </>
+            )}
             <Separator className="my-4" />
 
             {/* Mobile Auth Section */}
@@ -109,18 +113,20 @@ export function Header({ user }: HeaderProps) {
           <span className="text-lg font-semibold tracking-tight">BriefBot</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="ml-6 hidden md:flex md:gap-6">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              {item.name}
-            </Link>
-          ))}
-        </nav>
+        {/* Desktop Navigation - only show when authenticated */}
+        {user && (
+          <nav className="ml-6 hidden md:flex md:gap-6">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         {/* Spacer */}
         <div className="flex-1" />

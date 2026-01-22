@@ -14,19 +14,22 @@ test.describe('Homepage', () => {
     await expect(page.locator('text=Privacy-first OCR utility')).toBeVisible()
   })
 
-  test('should display navigation header', async ({ page, isMobile }) => {
+  test('should display navigation header without protected links when unauthenticated', async ({ page, isMobile }) => {
     await page.goto('/')
 
     // Check logo in header
     await expect(page.locator('header').locator('text=BriefBot')).toBeVisible()
 
-    // Desktop navigation (hidden on mobile)
+    // Protected nav links should NOT be visible when not authenticated
     if (!isMobile) {
-      await expect(page.locator('header nav')).toBeVisible()
-      await expect(page.locator('header').locator('text=Upload')).toBeVisible()
-      await expect(page.locator('header').locator('text=Documents')).toBeVisible()
+      // Desktop nav should not exist or be hidden when not logged in
+      await expect(page.locator('header nav')).toHaveCount(0)
+      await expect(page.locator('header').locator('a[href="/upload"]')).toHaveCount(0)
+      await expect(page.locator('header').locator('a[href="/documents"]')).toHaveCount(0)
+      // Sign in should be visible
+      await expect(page.locator('header').locator('text=Sign in')).toBeVisible()
     } else {
-      // Mobile shows hamburger menu instead
+      // Mobile shows hamburger menu
       await expect(page.locator('button[aria-label="Open menu"]')).toBeVisible()
     }
   })
@@ -59,8 +62,8 @@ test.describe('Homepage', () => {
       // Mobile navigation should show hamburger menu
       await expect(page.locator('button[aria-label="Open menu"]')).toBeVisible()
 
-      // Desktop nav should be hidden on mobile
-      await expect(page.locator('header nav')).toBeHidden()
+      // Desktop nav should not exist (not authenticated)
+      await expect(page.locator('header nav')).toHaveCount(0)
 
       // Verify text is readable (not too small)
       const fontSize = await heading.evaluate((el) => {
@@ -73,7 +76,7 @@ test.describe('Homepage', () => {
     }
   })
 
-  test('should open mobile menu when hamburger clicked', async ({ page }) => {
+  test('should open mobile menu without protected links when unauthenticated', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/')
@@ -81,10 +84,16 @@ test.describe('Homepage', () => {
     // Click hamburger menu
     await page.click('button[aria-label="Open menu"]')
 
-    // Check that sheet is visible with navigation items
+    // Check that sheet is visible
     await expect(page.locator('[role="dialog"]')).toBeVisible()
-    await expect(page.locator('[role="dialog"]').locator('text=Upload')).toBeVisible()
-    await expect(page.locator('[role="dialog"]').locator('text=Documents')).toBeVisible()
-    await expect(page.locator('[role="dialog"]').locator('text=Settings')).toBeVisible()
+
+    // Protected nav links should NOT be visible when not authenticated
+    await expect(page.locator('[role="dialog"]').locator('a[href="/upload"]')).toHaveCount(0)
+    await expect(page.locator('[role="dialog"]').locator('a[href="/documents"]')).toHaveCount(0)
+    await expect(page.locator('[role="dialog"]').locator('a[href="/settings"]')).toHaveCount(0)
+
+    // Sign in/Register buttons should be visible
+    await expect(page.locator('[role="dialog"]').locator('text=Sign in')).toBeVisible()
+    await expect(page.locator('[role="dialog"]').locator('text=Register')).toBeVisible()
   })
 })
