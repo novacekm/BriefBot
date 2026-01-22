@@ -6,10 +6,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getDocument } from "@/lib/actions/document";
 import { DocumentViewer } from "@/components/features/documents/document-viewer";
 import { DocumentMetadata } from "@/components/features/documents/document-metadata";
-import { ProcessingState } from "@/components/features/documents/processing-state";
+import { ProcessingActions } from "@/components/features/documents/processing-actions";
 import { DocumentSummary } from "@/components/features/documents/document-summary";
 import { ExtractedTextSection } from "@/components/features/documents/extracted-text-section";
 import { TranslationTabs } from "@/components/features/documents/translation-tabs";
+import type {
+  ExtractedDeadline,
+  ExtractedAmount,
+  ActionItem,
+} from "@/lib/ai/ocr/types";
+
+/** Parsed metadata structure from JSON */
+interface ParsedMetadata {
+  deadlines: ExtractedDeadline[];
+  amounts: ExtractedAmount[];
+  actionItems: ActionItem[];
+}
+
+/** Safely parse metadata JSON */
+function parseMetadata(metadata: string | null): ParsedMetadata | null {
+  if (!metadata) return null;
+  try {
+    return JSON.parse(metadata) as ParsedMetadata;
+  } catch {
+    return null;
+  }
+}
 
 export const metadata: Metadata = {
   title: "Document Details - BriefBot",
@@ -76,7 +98,8 @@ export default async function DocumentDetailPage({
 
         {/* Processing States (PENDING, PROCESSING, FAILED) */}
         {document.status !== "COMPLETED" && (
-          <ProcessingState
+          <ProcessingActions
+            documentId={document.id}
             status={document.status}
             errorMessage={document.errorMessage}
             className="mb-6"
@@ -84,10 +107,16 @@ export default async function DocumentDetailPage({
         )}
 
         {/* Completed State: Summary, Text, Translations */}
-        {document.status === "COMPLETED" && (
+        {document.status === "COMPLETED" && (() => {
+          const parsedMetadata = parseMetadata(document.metadata);
+          return (
           <div className="space-y-6">
             {/* Document Summary (AI-extracted deadlines, actions, amounts) */}
-            <DocumentSummary />
+            <DocumentSummary
+              deadlines={parsedMetadata?.deadlines}
+              actions={parsedMetadata?.actionItems}
+              amounts={parsedMetadata?.amounts}
+            />
 
             {/* Extracted Text */}
             {document.extractedText && (
@@ -101,7 +130,8 @@ export default async function DocumentDetailPage({
             {/* Translations */}
             <TranslationTabs translations={document.translations} />
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

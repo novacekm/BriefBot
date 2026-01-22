@@ -53,6 +53,9 @@ model Document {
   // Document classification
   documentType String? // Swiss document type: tax, insurance, permit, municipal, debt_collection, social_security, vehicle, customs, utility, unknown
 
+  // Structured data (JSON)
+  metadata String? @db.Text // JSON: { deadlines, amounts, references, actionItems, senderAuthority }
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -15,6 +15,9 @@ export type { DocumentMetadataProps } from "./document-metadata";
 export { ProcessingState } from "./processing-state";
 export type { ProcessingStateProps } from "./processing-state";
 
+export { ProcessingActions } from "./processing-actions";
+export type { ProcessingActionsProps } from "./processing-actions";
+
 export { DocumentViewer } from "./document-viewer";
 export type { DocumentViewerProps } from "./document-viewer";
 
