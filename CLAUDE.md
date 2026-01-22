@@ -56,6 +56,18 @@ Invoke these for specific tasks:
 ### Agents (`.claude/agents/`)
 Specialized subagents with focused system prompts:
 
+**domain-expert** - Swiss domain expertise & product owner ⭐ VALIDATE NEEDS FIRST
+- Swiss official correspondence knowledge
+- User need validation
+- Feature prioritization
+- Terminology accuracy
+
+**market-analyst** - Business & market strategy
+- Go-to-market decisions
+- Pricing and monetization
+- Competitive positioning
+- Business viability assessment
+
 **planner** - Planning methodology
 - User-centered design thinking
 - Swiss context considerations
@@ -107,6 +119,7 @@ Specialized subagents with focused system prompts:
 BriefBot/
 ├── .claude/
 │   ├── agents/              # Specialized subagents (planner, architect, etc.)
+│   ├── knowledge/           # Domain knowledge for agents
 │   └── skills/              # Invokable skills (plan, review)
 ├── app/                     # Next.js 15 App Router
 │   ├── (auth)/              # Authentication routes
@@ -133,6 +146,7 @@ BriefBot/
 ├── docs/
 │   ├── specs/               # Feature specifications
 │   ├── screenshots/         # Screenshot documentation
+│   ├── research/            # User research & market analysis
 │   ├── ADR/                 # Architecture Decision Records
 │   ├── COMPLIANCE/          # nFADP compliance docs
 │   ├── SECURITY/            # Security documentation
@@ -275,25 +289,28 @@ npm run type-check         # TypeScript check
 
 | Task | Primary Agent | Also Consider |
 |------|---------------|---------------|
-| Plan new feature | `planner` | - |
+| Validate user need / feature priority | `domain-expert` | `market-analyst` |
+| Business viability / pricing | `market-analyst` | `domain-expert` |
+| Plan new feature | `planner` | `domain-expert` |
 | Design system architecture | `architect` | `security` |
 | Build UI component | `ux-designer` | `tester` |
 | Database schema change | `persistence` | `security` |
 | Security/privacy review | `security` | - |
 | Write tests | `tester` | - |
 | Code review | `reviewer` | - |
-| OCR/translation feature | `ml-expert` | `architect` |
+| OCR/translation feature | `ml-expert` | `architect`, `domain-expert` |
 | Docker/CI/CD setup | `infra` | - |
 
 ### Core Workflow (Daily Use)
 
 ```
-1. /plan or planner    → Define what to build
-2. architect + ux-designer (parallel) → Design solution
-3. Implement with TDD
-4. reviewer or /review → Validate before commit
-5. npm run pre-pr      → Local validation
-6. gh pr create        → Create PR
+1. domain-expert       → Validate user need & priority
+2. /plan or planner    → Define what to build
+3. architect + ux-designer (parallel) → Design solution
+4. Implement with TDD
+5. reviewer or /review → Validate before commit
+6. npm run pre-pr      → Local validation
+7. gh pr create        → Create PR
 ```
 
 ### When to Spawn Multiple Agents (Parallel)
