@@ -62,12 +62,12 @@ export function Header({ user }: HeaderProps) {
             {user && (
               <>
                 <Separator className="my-4" />
-                <nav className="flex flex-col space-y-3">
+                <nav className="flex flex-col space-y-1">
                   {navigation.map((item) => (
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="text-sm font-medium transition-colors hover:text-primary"
+                      className="flex min-h-11 items-center text-sm font-medium transition-colors hover:text-primary"
                     >
                       {item.name}
                     </Link>
@@ -138,10 +138,10 @@ export function Header({ user }: HeaderProps) {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-9 w-9 rounded-full"
+                  className="relative h-10 w-10 rounded-full"
                   aria-label="User menu"
                 >
-                  <Avatar className="h-9 w-9">
+                  <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
                       {user.email ? getInitials(user.email) : "U"}
                     </AvatarFallback>
@@ -167,17 +167,22 @@ export function Header({ user }: HeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Sign in</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">Sign in</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/register">Register</Link>
+              </Button>
+            </div>
           )}
         </div>
 
         {/* Mobile User Avatar (visible when logged in) */}
         {user && (
           <div className="flex items-center md:hidden">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-primary text-primary-foreground">
                 {user.email ? getInitials(user.email) : "U"}
               </AvatarFallback>
             </Avatar>
