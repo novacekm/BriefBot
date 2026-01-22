@@ -141,6 +141,19 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      minio:
+        image: bitnami/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -175,6 +188,12 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_e2e
           SKIP_ENV_VALIDATION: true
           AUTH_SECRET: ci-test-secret-do-not-use-in-production
+          MINIO_ENDPOINT: localhost
+          MINIO_PORT: 9000
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+          MINIO_BUCKET: briefbot-documents
+          MINIO_USE_SSL: false
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -200,6 +219,19 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      minio:
+        image: bitnami/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -240,6 +272,12 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
           SKIP_ENV_VALIDATION: true
           AUTH_SECRET: ci-test-secret-do-not-use-in-production
+          MINIO_ENDPOINT: localhost
+          MINIO_PORT: 9000
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+          MINIO_BUCKET: briefbot-documents
+          MINIO_USE_SSL: false
 
       - name: Update baselines if tests failed
         if: steps.visual-tests.outcome == 'failure'
@@ -248,6 +286,12 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
           SKIP_ENV_VALIDATION: true
           AUTH_SECRET: ci-test-secret-do-not-use-in-production
+          MINIO_ENDPOINT: localhost
+          MINIO_PORT: 9000
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+          MINIO_BUCKET: briefbot-documents
+          MINIO_USE_SSL: false
 
       - name: Upload updated baselines
         uses: actions/upload-artifact@v4
