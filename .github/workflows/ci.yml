@@ -87,8 +87,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_test
 
-      - name: Run tests
-        run: npm run test || true
+      - name: Run unit tests
+        run: npm run test:unit -- --passWithNoTests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_test
 
@@ -117,11 +117,10 @@ jobs:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
           SKIP_ENV_VALIDATION: true
 
-  # E2E tests - Multi-browser testing (runs on PRs to master)
+  # E2E tests - Multi-browser testing
   e2e:
     name: E2E Tests (${{ matrix.project }})
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     needs: [lint, type-check, test, build]
     strategy:
       fail-fast: false
@@ -188,7 +187,6 @@ jobs:
   visual:
     name: Visual Regression Tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     needs: [lint, type-check, test, build]
     services:
       postgres:

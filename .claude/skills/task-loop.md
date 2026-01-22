@@ -251,7 +251,18 @@ Tests: unit, e2e, visual"
 
 Can make multiple commits during implementation.
 
-**Step 4f: Push and Create PR**
+**Step 4f: Pre-PR Validation**
+
+Before creating a PR, run all CI checks locally to catch failures early:
+```bash
+# Run all CI checks locally
+npm run pre-pr
+
+# This runs: lint, type-check, build, e2e tests, visual tests
+# Only proceed if ALL checks pass
+```
+
+**Step 4g: Push and Create PR**
 ```bash
 # Push feature branch
 git push -u origin issue-<number>-<short-title>
@@ -289,7 +300,7 @@ Closes #<issue-number>" \
   --label "<domain>"
 ```
 
-**Step 4g: Return to Master (Read-Only)**
+**Step 4h: Return to Master (Read-Only)**
 ```bash
 # Return to master for the next task selection
 # NOTE: Never push directly to master - all changes go through PRs

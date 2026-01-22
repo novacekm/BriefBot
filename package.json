@@ -26,7 +26,8 @@
     "test:a11y": "playwright test --grep @a11y",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "pre-pr": "./scripts/pre-pr-check.sh"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
