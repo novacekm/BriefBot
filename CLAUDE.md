@@ -168,6 +168,16 @@ See `DEVELOPMENT_FLOW.md` for the complete development process.
   4. Get PR reviewed and approved
   5. Merge to `master` (squash or merge commit)
 
+### No Claude Attribution (CRITICAL)
+
+**NEVER include Claude in commits, PRs, or any Git history.**
+
+- **NO** `Co-Authored-By: Claude` lines in commit messages
+- **NO** Claude mentioned as contributor or author
+- **NO** AI attribution of any kind in Git history
+- All commits appear as authored solely by the repository owner
+- This applies to commit messages, PR descriptions, and all Git metadata
+
 ## Core Principles
 
 ### 1. Privacy-First
