@@ -10,7 +10,7 @@ export default function Home() {
         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
           Decode Swiss Official Mail
         </h1>
-        <p className="max-w-[600px] text-muted-foreground md:text-lg">
+        <p className="max-w-[600px] text-base text-muted-foreground md:text-lg">
           Privacy-first OCR utility for Swiss residents. Understand official
           correspondence in German, French, and Italian.
         </p>
@@ -38,7 +38,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground">
                 Supports JPEG, PNG, WebP, and PDF formats up to 10MB
               </p>
             </CardContent>
@@ -52,7 +52,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground">
                 Powered by GPT-4 Vision for accurate OCR results
               </p>
             </CardContent>
@@ -66,7 +66,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground">
                 Get clear explanations of official terminology
               </p>
             </CardContent>
@@ -76,7 +76,7 @@ export default function Home() {
 
       {/* Privacy Note */}
       <section className="py-8 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground">
           Your documents are processed securely and deleted after 30 days.
           <br />
           Compliant with Swiss nFADP data protection regulations.
