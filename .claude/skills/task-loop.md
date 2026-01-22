@@ -377,27 +377,34 @@ gh issue list --search "Blocked by: #<completed-issue>" --json number,title
 ```
 
 **Reflection Actions:**
-1. **Unblock dependent issues:**
+1. **Update README Roadmap:**
+   - Change `- [ ]` to `- [x]` for the completed issue
+   - Keep README in sync with GitHub Issues
+   - Example: `- [ ] [#3 MinIO Storage](...)` → `- [x] [#3 MinIO Storage](...)`
+
+2. **Unblock dependent issues:**
    - Remove "blocked" label
    - Add "ready" label
    - Comment: "Unblocked by #X"
 
-2. **Close obsolete issues:**
+3. **Close obsolete issues:**
    - If implementation made another issue unnecessary
    - Comment: "Resolved by #X - closing as obsolete"
 
-3. **Update related issues:**
+4. **Update related issues:**
    - If scope changed, update description
    - If new complexity discovered, add notes
 
-4. **Create new issues:**
+5. **Create new issues:**
    - If bugs discovered during implementation
    - If refactoring opportunities found
    - If new features identified
+   - **Add new issues to README Roadmap**
 
-5. **Reprioritize if needed:**
+6. **Reprioritize if needed:**
    - If P0 revealed more P0s, address those first
    - If P1 is now blocking others, bump priority
+   - **Update README if priority section changes**
 
 ### Phase 7: NEXT?
 
