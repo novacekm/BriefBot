@@ -267,24 +267,53 @@ npm run lint               # ESLint
 npm run type-check         # TypeScript check
 ```
 
-## Using Skills and Agents
+## Agent Quick Reference
 
-### Skills (Invoke for Tasks)
+> **Rule**: For ANY new feature, start with `/plan` or `planner` agent BEFORE implementation.
 
-- **New feature/idea?** → **Use `plan` skill** or spawn `planner` agent ⭐
-- **Code review?** → **Use `review` skill** or spawn `reviewer` agent
+### Decision Table: Which Agent to Spawn?
 
-### Agents (Spawn for Specialized Tasks)
+| Task | Primary Agent | Also Consider |
+|------|---------------|---------------|
+| Plan new feature | `planner` | - |
+| Design system architecture | `architect` | `security` |
+| Build UI component | `ux-designer` | `tester` |
+| Database schema change | `persistence` | `security` |
+| Security/privacy review | `security` | - |
+| Write tests | `tester` | - |
+| Code review | `reviewer` | - |
+| OCR/translation feature | `ml-expert` | `architect` |
+| Docker/CI/CD setup | `infra` | - |
 
-- **Technical design?** → Spawn `architect` agent
-- **UI component?** → Spawn `ux-designer` agent
-- **Database change?** → Spawn `persistence` agent
-- **Security concern?** → Spawn `security` agent
-- **Docker issue?** → Spawn `infra` agent
-- **Writing tests?** → Spawn `tester` agent
-- **AI/OCR feature?** → Spawn `ml-expert` agent
+### Core Workflow (Daily Use)
 
-**Important:** For ANY new feature, always start with the **`plan` skill** or **`planner` agent** to brainstorm, ask questions, and propose solutions BEFORE implementation. See `CLAUDE_CODE_WORKFLOW.md` for the complete process.
+```
+1. /plan or planner    → Define what to build
+2. architect + ux-designer (parallel) → Design solution
+3. Implement with TDD
+4. reviewer or /review → Validate before commit
+5. npm run pre-pr      → Local validation
+6. gh pr create        → Create PR
+```
+
+### When to Spawn Multiple Agents (Parallel)
+
+For features touching multiple domains, spawn in ONE message:
+
+```
+# Document upload feature
+Task("Design upload API", architect)
+Task("Design upload UI", ux-designer)
+Task("Review upload security", security)
+```
+
+### Skills vs Agents
+
+| Use Skill | Use Agent |
+|-----------|-----------|
+| Quick, focused task | Deep exploration needed |
+| `/plan` for simple features | `planner` for complex features |
+| `/review` for quick check | `reviewer` for thorough review |
 
 ## Key Resources
 
