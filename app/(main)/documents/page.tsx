@@ -1,18 +1,31 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { Metadata } from "next";
+import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
+import {
+  DocumentCard,
+  DocumentsEmptyState,
+} from "@/components/features/documents";
 
 export const metadata: Metadata = {
   title: "My Documents - BriefBot",
   description: "View and manage your uploaded documents",
 };
 
-export default function DocumentsPage() {
+export default async function DocumentsPage() {
+  const session = await auth();
+
+  const documents = await prisma.document.findMany({
+    where: { userId: session!.user!.id },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      originalName: true,
+      mimeType: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mx-auto max-w-4xl">
@@ -24,20 +37,16 @@ export default function DocumentsPage() {
             View and manage your uploaded documents.
           </p>
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle as="h2">No documents yet</CardTitle>
-            <CardDescription>
-              Upload your first document to get started with translation and
-              analysis.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Document list coming soon
-            </p>
-          </CardContent>
-        </Card>
+
+        {documents.length === 0 ? (
+          <DocumentsEmptyState />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {documents.map((doc) => (
+              <DocumentCard key={doc.id} document={doc} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
