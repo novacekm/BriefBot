@@ -11,8 +11,8 @@ export default defineConfig({
       'tests/visual/**',
       'node_modules/**',
     ],
-    // Only look in tests/unit for vitest tests
-    include: ['tests/unit/**/*.{test,spec}.{ts,tsx}'],
+    // Look in tests/unit and tests/integration for vitest tests
+    include: ['tests/unit/**/*.{test,spec}.{ts,tsx}', 'tests/integration/**/*.{test,spec}.{ts,tsx}'],
     // Use jsdom for DOM testing
     environment: 'jsdom',
     // Setup file for testing library
