@@ -8,10 +8,11 @@
 
 | Skill | Purpose |
 |-------|---------|
-| `/plan` | Feature planning and brainstorming |
+| `/sync-check` | Session start - verify sync, suggest next task |
+| `/plan` | Multi-agent feature planning |
 | `/review` | Code review before commit |
 | `/task-loop` | Automated task orchestration |
-| `/pr-review` | PR review and merge |
+| `/pr-review` | PR review with inline comments |
 
 ### Agents (spawn for specialized tasks)
 
@@ -40,7 +41,7 @@
 ```
 .claude/
 ├── agents/       # 9 specialized agents
-├── skills/       # 4 reusable workflows
+├── skills/       # 5 reusable workflows
 ├── rules/        # 5 persistent rules
 └── settings.json # Permissions
 ```
