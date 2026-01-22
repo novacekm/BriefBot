@@ -1,183 +1,265 @@
-# Plan - Feature Planning Skill
+# Plan Skill
 
-> **Invoke with:** User describes a feature idea
-> **Purpose:** Interactive planning session to brainstorm, clarify requirements, and create specifications
+> **Invoke with:** `/plan <issue-number>` or `/plan` for new ideas
+> **Purpose:** Multi-agent feature planning with persistent plan output
 
-## What This Skill Does
+## Two Modes
 
-Conducts an interactive planning session for new features:
-1. Asks clarifying questions about the feature
-2. Proposes 2-3 solution approaches with trade-offs
-3. Helps select the best approach
-4. Creates detailed feature specification
-5. Plans screenshot test scenarios
+### Mode 1: Issue-Based Planning (`/plan <N>`)
 
-## When to Use
+For existing GitHub issues - structured planning with domain agents.
 
-Use this skill when you want to:
-- Start planning a new feature
-- Brainstorm different approaches
-- Get help understanding requirements
-- Create a detailed specification
+### Mode 2: Discovery Planning (`/plan`)
 
-## Planning Process
+For new ideas - interactive brainstorming before creating an issue.
+
+---
+
+## Mode 1: Issue-Based Planning
+
+### Step 1: Gather Context
+
+```bash
+# Get issue details
+gh issue view <N> --json number,title,body,labels,comments
+
+# Get related code
+# (based on issue labels, explore relevant directories)
+```
+
+### Step 2: Spawn Domain Agents (PARALLEL)
+
+Based on issue labels, spawn relevant agents:
+
+| Label | Agent | Focus |
+|-------|-------|-------|
+| `frontend` | ux-designer | UI/UX, component design, states |
+| `backend` | architect | API design, data flow, patterns |
+| `database` | persistence | Schema, queries, migrations |
+| `auth` | security | Auth flows, nFADP compliance |
+| `ai-ml` | ml-expert | OCR, translation, AI integration |
+| `infra` | infra | Deployment, Docker, CI/CD |
+
+```
+Task("Analyze issue #<N> for UI/UX requirements", ux-designer)
+Task("Analyze issue #<N> for architecture", architect)
+Task("Analyze issue #<N> for security", security)
+```
+
+Each agent:
+1. Reads the issue
+2. Explores relevant code
+3. Returns their analysis and recommendations
+
+### Step 3: Synthesize Plan
+
+Combine agent outputs into a plan file:
+
+```bash
+# Create plan file
+docs/plans/issue-<N>.md
+```
+
+**Plan file format:**
+```markdown
+# Issue #<N>: <title>
+
+## Summary
+<1-2 sentence description>
+
+## Agent Analysis
+
+### Architecture (from architect agent)
+- <findings>
+- <recommendations>
+
+### UI/UX (from ux-designer agent)
+- <findings>
+- <recommendations>
+
+### Security (from security agent)
+- <findings>
+- <recommendations>
+
+## Implementation Steps
+1. <step with file path>
+2. <step with file path>
+3. ...
+
+## Files to Modify
+- `path/to/file1.ts` - <what changes>
+- `path/to/file2.ts` - <what changes>
+
+## Files to Create
+- `path/to/new-file.ts` - <purpose>
+
+## Acceptance Criteria
+- [ ] <from issue>
+- [ ] <from issue>
+
+## Test Scenarios
+- [ ] <scenario 1>
+- [ ] <scenario 2>
+
+## Technical Decisions
+- <decision 1 and rationale>
+- <decision 2 and rationale>
+
+## Dependencies
+- <npm packages>
+- <env vars>
+- <external services>
+
+## Open Questions
+- <any unresolved questions for user>
+```
+
+### Step 4: Review & Approve
+
+Present plan summary to user:
+- Key decisions made
+- Implementation approach
+- Any open questions
+
+User can:
+- Approve → proceed to execution
+- Modify → adjust plan based on feedback
+- Reject → start over with different approach
+
+### Step 5: Update Issue
+
+After approval:
+```bash
+gh issue comment <N> --body "Plan created: docs/plans/issue-<N>.md"
+gh issue edit <N> --add-label "planned"
+```
+
+---
+
+## Mode 2: Discovery Planning
+
+For new feature ideas without an existing issue.
 
 ### Phase 1: Discovery
 
-**I will ask you:**
-- What problem are you trying to solve?
+Ask clarifying questions:
+- What problem are you solving?
 - Who are the users?
-- What's the ideal user experience?
-- Are there any constraints?
+- What's the ideal experience?
+- Any constraints?
 - What does success look like?
-
-**Example Questions:**
-- "Should users be able to upload multiple files at once?"
-- "Should OCR happen immediately or in the background?"
-- "What file types should we support?"
-- "How long should we keep documents?"
 
 ### Phase 2: Solution Options
 
-**I will propose 2-3 approaches:**
+Propose 2-3 approaches:
 
-**Option A: Minimal MVP**
+**Option A: Minimal**
 - Core functionality only
 - Fast to build
-- Limited features
+- Pros/cons
 
-**Option B: Balanced (Usually Recommended)**
-- Good user experience
+**Option B: Balanced (Recommended)**
+- Good UX
 - Reasonable complexity
-- Covers common use cases
+- Pros/cons
 
 **Option C: Full-Featured**
 - Best UX
-- Handles all edge cases
-- Higher complexity
+- Handles edge cases
+- Pros/cons
 
-**Each option includes:**
-- What it does
-- Pros and cons
-- Estimated effort
-- When to use it
+### Phase 3: Create Issue
 
-### Phase 3: Specification
+After selecting approach:
+```bash
+gh issue create \
+  --title "feat: <feature name>" \
+  --body "<generated specification>" \
+  --label "ready,<priority>,<domain>"
+```
 
-After you select an approach, I will create:
+### Phase 4: Proceed to Issue-Based Planning
 
-**Feature Specification** (`docs/specs/[feature-name].md`):
-- Problem statement
-- User stories
-- Selected approach and rationale
-- User flow
-- UI/UX requirements (all visual states)
-- Acceptance criteria
-- Screenshot test scenarios
-- Technical requirements
-- Privacy & security review
-- Testing strategy
+```
+/plan <new-issue-number>
+```
 
-### Phase 4: Handoff
+---
 
-Specification ready for:
-- Technical agents (Architect, UX Designer, Security, etc.)
-- Implementation
-- Testing
+## Swiss Context
 
-## Swiss Context Considerations
-
-I will ensure we consider:
-- **Multi-language**: German, French, Italian support
+Always consider:
+- **Multi-language**: DE/FR/IT support needed?
 - **Privacy-first**: Swiss nFADP compliance
-- **Mobile-first**: Touch-friendly, offline-capable
+- **Mobile-first**: Touch-friendly, works offline
 - **Document types**: Swiss official mail, insurance, tax forms
 
-## Example Planning Session
+---
 
-**You:** "I want to add document upload"
+## Quick Reference
 
-**Me:**
-```
-Let me help you plan this feature. I have some questions:
+```bash
+# Plan existing issue
+/plan 5
 
-1. Should users upload one document at a time, or multiple?
-2. Should OCR happen immediately, or in the background?
-3. What should users see while OCR is processing?
-4. Should we support drag-and-drop, or just file picker?
-5. What file types: PDF, images, or both?
-6. What's the maximum file size we should allow?
-7. Can users delete documents immediately after upload?
-```
+# Plan new feature (discovery mode)
+/plan
 
-**You:** [Answer questions]
+# Read existing plan
+cat docs/plans/issue-5.md
 
-**Me:**
-```
-Based on your answers, here are 3 approaches:
-
-**Option A: Simple Upload**
-- Single file via button
-- Synchronous OCR processing
-- Loading spinner
-- Display results on same page
-
-Pros: ✅ Fast to build, ✅ Simple
-Cons: ❌ Blocks UI, ❌ No multi-file
-
-Effort: ~4 hours
-
-**Option B: Enhanced Upload (Recommended)**
-- Multi-file with drag-and-drop
-- Background OCR processing
-- Progress indicators
-- Redirect to document list
-
-Pros: ✅ Better UX, ✅ Scalable, ✅ Non-blocking
-Cons: ⚠️ More complex, ⚠️ Needs job queue
-
-Effort: ~8 hours
-
-**Option C: Advanced Upload**
-- All features from Option B
-- Real-time progress (WebSockets)
-- Thumbnail previews
-- Cancel/retry functionality
-
-Pros: ✅ Best UX, ✅ All edge cases
-Cons: ❌ High complexity, ❌ Longer dev time
-
-Effort: ~16 hours
-
-Which option works best for you?
+# Execute after planning
+git checkout -b issue-5-feature-name
+# (read plan and implement)
 ```
 
-**You:** "Option B sounds good"
+---
 
-**Me:**
+## Example: `/plan 5`
+
 ```
-Perfect! Let me create the specification...
+=====================================
+  Planning Issue #5: OCR Pipeline
+=====================================
 
-[Creates docs/specs/document-upload.md with full details]
+GATHERING CONTEXT...
+- Issue: #5 OCR Pipeline Integration
+- Labels: backend, ai-ml, P1
+- Acceptance criteria: 4 items
 
-Specification created! Next steps:
-1. Review the spec in docs/specs/document-upload.md
-2. I'll consult technical agents (Architect, UX Designer, Security)
-3. Ready to start implementation when you are
+SPAWNING AGENTS...
+- architect: Analyzing backend patterns...
+- ml-expert: Analyzing OCR requirements...
+- security: Analyzing data handling...
+
+AGENT RESULTS:
+
+[Architect]
+- Recommend Server Actions for OCR trigger
+- Use background job queue (BullMQ)
+- Store results in MinIO + DB
+
+[ML Expert]
+- Tesseract.js for client-side preview
+- Google Vision API for production accuracy
+- Support DE/FR/IT language detection
+
+[Security]
+- Encrypt documents at rest
+- No PII in logs
+- 30-day retention policy
+
+GENERATING PLAN...
+→ Created: docs/plans/issue-5.md
+
+KEY DECISIONS:
+1. Hybrid OCR: client preview + server accuracy
+2. Background processing with progress updates
+3. Results cached in MinIO
+
+OPEN QUESTIONS:
+1. Preferred cloud OCR provider?
+2. Maximum document size?
+
+Approve plan? [y/n/modify]
 ```
-
-## Output
-
-This skill produces:
-- ✅ Feature specification document
-- ✅ Screenshot test scenarios
-- ✅ Acceptance criteria
-- ✅ Technical requirements
-- ✅ Security review checklist
-
-## Reference Guides
-
-For detailed context, see:
-- `.claude/agents/planner/AGENT.md` - Comprehensive planning methodology
-- `.claude/agents/ux-design/AGENT.md` - Swiss International Style principles
-- `.claude/agents/security/AGENT.md` - Swiss nFADP compliance requirements
