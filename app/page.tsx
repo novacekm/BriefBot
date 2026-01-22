@@ -10,7 +10,7 @@ export default function Home() {
         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
           Decode Swiss Official Mail
         </h1>
-        <p className="max-w-[600px] text-base text-muted-foreground md:text-lg">
+        <p className="max-w-xl text-base text-muted-foreground md:text-lg">
           Privacy-first OCR utility for Swiss residents. Understand official
           correspondence in German, French, and Italian.
         </p>

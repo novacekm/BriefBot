@@ -23,8 +23,11 @@ const buttonVariants = cva(
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        lg: "h-11 rounded-md px-8",
         icon: "h-9 w-9",
+        // Touch-friendly sizes for mobile (44px minimum per WCAG 2.1)
+        touch: "h-11 min-w-[44px] px-4 py-2",
+        "touch-icon": "h-11 w-11",
       },
     },
     defaultVariants: {

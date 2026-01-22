@@ -41,21 +41,21 @@ function getInitials(email: string): string {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-sticky w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center md:h-16">
         {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
+              size="touch-icon"
               className="mr-2 md:hidden"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[280px]">
+          <SheetContent side="left" className="w-72">
             <SheetHeader>
               <SheetTitle className="text-left">BriefBot</SheetTitle>
             </SheetHeader>

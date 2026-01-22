@@ -56,6 +56,17 @@
   /* Shadows - Subtle Only */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+
+  /* Z-Index Scale */
+  --z-base: 0;
+  --z-dropdown: 50;
+  --z-sticky: 50;
+  --z-modal: 50;
+  --z-skip-link: 100;
+
+  /* Layout Dimensions */
+  --header-height-mobile: 3.5rem;  /* 56px = h-14 */
+  --header-height-desktop: 4rem;   /* 64px = h-16 */
 }
 
 html {

@@ -60,7 +60,25 @@ describe("Button", () => {
   it("renders with large size", () => {
     render(<Button size="lg">Large</Button>);
     const button = screen.getByRole("button", { name: /large/i });
-    expect(button).toHaveClass("h-10");
+    expect(button).toHaveClass("h-11");
+  });
+
+  it("renders with touch size (44px minimum)", () => {
+    render(<Button size="touch">Touch</Button>);
+    const button = screen.getByRole("button", { name: /touch/i });
+    expect(button).toHaveClass("h-11");
+    expect(button).toHaveClass("min-w-[44px]");
+  });
+
+  it("renders with touch-icon size (44px square)", () => {
+    render(
+      <Button size="touch-icon" aria-label="Touch icon button">
+        X
+      </Button>
+    );
+    const button = screen.getByRole("button", { name: /touch icon button/i });
+    expect(button).toHaveClass("h-11");
+    expect(button).toHaveClass("w-11");
   });
 
   it("renders with icon size", () => {
