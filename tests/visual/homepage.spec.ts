@@ -20,14 +20,15 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Homepage Visual Regression @visual', () => {
   test('should match desktop screenshot @visual', async ({ page }) => {
+    // Use fixed viewport for consistent cross-platform screenshots
+    await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/')
 
     // Wait for page to be fully loaded
     await page.waitForLoadState('networkidle')
 
-    // Capture full-page screenshot
+    // Capture viewport screenshot (not fullPage for consistent dimensions)
     await expect(page).toHaveScreenshot('homepage-desktop.png', {
-      fullPage: true,
       maxDiffPixelRatio: 0.1, // 10% tolerance for cross-platform differences
     })
   })
@@ -40,7 +41,6 @@ test.describe('Homepage Visual Regression @visual', () => {
     await page.waitForLoadState('networkidle')
 
     await expect(page).toHaveScreenshot('homepage-mobile.png', {
-      fullPage: true,
       maxDiffPixelRatio: 0.1,
     })
   })
@@ -53,7 +53,6 @@ test.describe('Homepage Visual Regression @visual', () => {
     await page.waitForLoadState('networkidle')
 
     await expect(page).toHaveScreenshot('homepage-tablet.png', {
-      fullPage: true,
       maxDiffPixelRatio: 0.1,
     })
   })

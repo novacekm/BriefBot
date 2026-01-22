@@ -26,24 +26,31 @@ test.describe('Homepage Accessibility @a11y', () => {
     await expect(h2).toContainText('How It Works')
   })
 
-  test('should have accessible navigation', async ({ page }) => {
+  test('should have accessible navigation', async ({ page, isMobile }) => {
     await page.goto('/')
 
     // Check header exists
     const header = page.locator('header')
     await expect(header).toBeVisible()
 
-    // Check nav landmark exists
-    const nav = page.locator('header nav')
-    await expect(nav).toBeVisible()
+    // Desktop nav is hidden on mobile (uses Sheet instead)
+    if (!isMobile) {
+      // Check nav landmark exists on desktop
+      const nav = page.locator('header nav')
+      await expect(nav).toBeVisible()
 
-    // Check all links have accessible names
-    const navLinks = page.locator('header nav a')
-    const count = await navLinks.count()
-    for (let i = 0; i < count; i++) {
-      const link = navLinks.nth(i)
-      const accessibleName = await link.getAttribute('aria-label') || await link.textContent()
-      expect(accessibleName).toBeTruthy()
+      // Check all links have accessible names
+      const navLinks = page.locator('header nav a')
+      const count = await navLinks.count()
+      for (let i = 0; i < count; i++) {
+        const link = navLinks.nth(i)
+        const accessibleName = await link.getAttribute('aria-label') || await link.textContent()
+        expect(accessibleName).toBeTruthy()
+      }
+    } else {
+      // On mobile, check hamburger menu is accessible
+      const menuButton = page.locator('button[aria-label="Open menu"]')
+      await expect(menuButton).toBeVisible()
     }
   })
 

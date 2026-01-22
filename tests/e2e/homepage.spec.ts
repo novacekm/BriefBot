@@ -14,16 +14,21 @@ test.describe('Homepage', () => {
     await expect(page.locator('text=Privacy-first OCR utility')).toBeVisible()
   })
 
-  test('should display navigation header', async ({ page }) => {
+  test('should display navigation header', async ({ page, isMobile }) => {
     await page.goto('/')
 
     // Check logo in header
     await expect(page.locator('header').locator('text=BriefBot')).toBeVisible()
 
-    // Check navigation links (visible on desktop)
-    await expect(page.locator('header nav')).toBeVisible()
-    await expect(page.locator('header').locator('text=Upload')).toBeVisible()
-    await expect(page.locator('header').locator('text=Documents')).toBeVisible()
+    // Desktop navigation (hidden on mobile)
+    if (!isMobile) {
+      await expect(page.locator('header nav')).toBeVisible()
+      await expect(page.locator('header').locator('text=Upload')).toBeVisible()
+      await expect(page.locator('header').locator('text=Documents')).toBeVisible()
+    } else {
+      // Mobile shows hamburger menu instead
+      await expect(page.locator('button[aria-label="Open menu"]')).toBeVisible()
+    }
   })
 
   test('should display feature cards', async ({ page }) => {
