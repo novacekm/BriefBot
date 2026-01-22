@@ -41,9 +41,9 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 
 - [x] [#24 Local Authentication with NextAuth.js](https://github.com/novacekm/BriefBot/issues/24) (replaces #1)
 - [x] [#2 shadcn/ui Component Library Setup](https://github.com/novacekm/BriefBot/issues/2)
-- [ ] [#26 MinIO Storage Integration](https://github.com/novacekm/BriefBot/issues/26)
-- [ ] [#4 Document Upload UI](https://github.com/novacekm/BriefBot/issues/4)
-- [ ] [#5 Document Upload Server Action](https://github.com/novacekm/BriefBot/issues/5)
+- [x] [#26 MinIO Storage Integration](https://github.com/novacekm/BriefBot/issues/26)
+- [x] [#4 Document Upload UI](https://github.com/novacekm/BriefBot/issues/4)
+- [x] [#5 Document Upload Server Action](https://github.com/novacekm/BriefBot/issues/5)
 - [ ] [#6 OCR Integration with GPT-4 Vision](https://github.com/novacekm/BriefBot/issues/6)
 - [ ] [#7 OCR Processing Queue](https://github.com/novacekm/BriefBot/issues/7)
 - [ ] [#8 Document List View](https://github.com/novacekm/BriefBot/issues/8)

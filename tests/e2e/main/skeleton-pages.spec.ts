@@ -40,7 +40,8 @@ test.describe("Skeleton Pages - Authenticated Access", () => {
 
     // Verify page content
     await expect(page.locator("h1")).toContainText("Upload Document");
-    await expect(page.locator("text=Upload functionality coming soon")).toBeVisible();
+    // Upload zone should be visible with drop/click instruction
+    await expect(page.locator("text=Drop file here or click to upload")).toBeVisible();
   });
 
   test("should access documents list page when authenticated", async ({ page }) => {
