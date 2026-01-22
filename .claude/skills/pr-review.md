@@ -1,11 +1,15 @@
 # PR Review Skill
 
 > **Invoke with:** `/pr-review <pr-number>`
-> **Purpose:** Multi-agent PR review with findings posted directly to GitHub
+> **Purpose:** Multi-agent PR review with inline code comments that must be resolved
 
 ## What This Does
 
-Spawns multiple specialized agents IN PARALLEL to review the PR from different perspectives. Each agent posts their findings directly to the GitHub PR. This is NOT rubber-stamping.
+1. Spawns multiple agents IN PARALLEL to review from different perspectives
+2. Each agent posts **inline code comments** on specific lines (not general comments)
+3. Comments appear in "Files changed" tab and can be individually resolved
+4. Review loops until ALL comments are resolved
+5. Only merges when all reviewers approve and no unresolved threads
 
 ---
 
@@ -14,228 +18,213 @@ Spawns multiple specialized agents IN PARALLEL to review the PR from different p
 ### Step 1: Get PR Context
 
 ```bash
-# Get PR info
-gh pr view <N> --json number,title,body,files,additions,deletions
+# Get PR info and files
+gh pr view <N> --json number,title,body,files,headRefName
 
 # Get the diff
 gh pr diff <N>
 
-# Get linked issue
-gh issue view <linked-issue-number> --json body
+# Check for unresolved review threads
+gh api repos/novacekm/BriefBot/pulls/<N>/comments --jq 'length'
 ```
 
 ### Step 2: Spawn Review Agents (PARALLEL)
 
-Spawn these agents in a SINGLE message to review in parallel.
-
-> **Note:** The syntax below is pseudo-code. In practice, use the Task tool with `subagent_type` parameter pointing to agents defined in `.claude/agents/`.
+Spawn these agents in a SINGLE message:
 
 ```
-Task("Review PR #<N> for code quality", subagent_type=reviewer)
-Task("Review PR #<N> for security", subagent_type=security)
-Task("Review PR #<N> for architecture", subagent_type=architect)
+Task("Review PR #<N> for code quality - post inline comments", reviewer)
+Task("Review PR #<N> for security - post inline comments", security)
+Task("Review PR #<N> for architecture - post inline comments", architect)
 ```
 
-Each agent:
-1. Reads the PR diff
-2. Analyzes from their domain perspective
-3. Posts findings directly to GitHub PR
+### Step 3: Agents Post Inline Comments
 
-### Step 3: Collect & Post Results
+Each agent creates a **review with line comments** using the GitHub API:
 
-**If ANY agent found issues:**
 ```bash
-gh pr review <N> --request-changes --body "$(cat <<'EOF'
-## Review: Changes Requested
-
-Multiple reviewers found issues that need addressing.
-
-See individual comments above for details.
-
-Please fix and push updates, then request re-review.
-EOF
-)"
+# Create review with inline comments on specific lines
+gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
+  --method POST \
+  -f body="Code Quality Review" \
+  -f event="REQUEST_CHANGES" \
+  -f comments='[
+    {
+      "path": "src/lib/storage.ts",
+      "line": 42,
+      "body": "**Issue:** Using `any` type here.\n\n**Fix:** Define a proper interface."
+    },
+    {
+      "path": "src/lib/storage.ts",
+      "line": 67,
+      "body": "**Issue:** Function too long (53 lines).\n\n**Fix:** Extract into smaller functions."
+    }
+  ]'
 ```
 
-**If ALL agents approve:**
+If no issues found:
 ```bash
-gh pr comment <N> --body "LGTM - All review checks passed."
+gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
+  --method POST \
+  -f body="Code Quality Review - No issues found" \
+  -f event="APPROVE"
+```
 
-gh pr review <N> --approve --body "$(cat <<'EOF'
-## Review: Approved
+### Step 4: Review Loop Until All Resolved
 
-All reviewers passed:
-- Code quality
-- Security & compliance
-- Architecture patterns
+```
+┌──────────────────────────────────────────────────────┐
+│                                                      │
+│   Review ──► Inline Comments ──► Author Fixes        │
+│      ▲              │                   │            │
+│      │              │                   ▼            │
+│      │              │            Push + Mark         │
+│      │              │            as Resolved         │
+│      │              │                   │            │
+│      │              ▼                   │            │
+│      │      All Resolved? ──────────────┘            │
+│      │              │                                │
+│      │              │ Yes                            │
+│      │              ▼                                │
+│      │         APPROVE                               │
+│      │         & MERGE                               │
+│      │                                               │
+│      └───────────────────────────────────────────────┘
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
 
-Merging.
-EOF
-)"
-
-gh pr merge <N> --squash --auto --delete-branch
+**Check for unresolved comments:**
+```bash
+# Get pending review comments
+gh api repos/novacekm/BriefBot/pulls/<N>/comments \
+  --jq '[.[] | select(.in_reply_to_id == null)] | length'
 ```
 
 ---
 
-## Agent Review Instructions
+## Agent Instructions for Inline Comments
 
-### For `reviewer` Agent
+### For ALL Review Agents
 
-When spawned to review a PR:
+When reviewing a PR:
 
-1. **Read the diff**: `gh pr diff <N>`
-2. **Check for**:
-   - `any` types in TypeScript
-   - Functions > 50 lines
-   - Missing error handling
-   - console.log statements
-   - Commented-out code
-   - Unclear naming
-3. **Post findings to GitHub**:
+1. **Get the diff with line numbers:**
    ```bash
-   gh pr comment <N> --body "$(cat <<'EOF'
-   ## Code Quality Review
-
-   **File:** `src/lib/storage.ts`
-
-   ### Issues Found
-   - Line 42: Using `any` type - define proper interface
-   - Line 67-120: Function too long (53 lines) - extract helpers
-
-   ### Suggestions
-   - Consider adding JSDoc for public functions
-   EOF
-   )"
-   ```
-4. **If no issues**:
-   ```bash
-   gh pr comment <N> --body "## Code Quality Review\n\nNo issues found."
+   gh pr diff <N>
    ```
 
-### For `security` Agent
+2. **Identify issues with specific file paths and line numbers**
 
-When spawned to review a PR:
-
-1. **Read the diff**: `gh pr diff <N>`
-2. **Check for**:
-   - Input validation (Zod schemas)
-   - Auth/authz checks
-   - SQL injection risks
-   - XSS vulnerabilities
-   - Hardcoded secrets
-   - PII handling (Swiss nFADP)
-3. **Post findings to GitHub**:
+3. **Post inline comments using this format:**
    ```bash
-   gh pr comment <N> --body "$(cat <<'EOF'
-   ## Security Review
-
-   ### Issues Found
-   - `src/actions/upload.ts:23` - User input not validated
-   - `src/lib/db.ts:45` - Missing authorization check
-
-   ### nFADP Compliance
-   - PII handling: OK
-   - Data retention: Not applicable
-   EOF
-   )"
-   ```
-4. **If no issues**:
-   ```bash
-   gh pr comment <N> --body "## Security Review\n\nNo security issues found. nFADP compliance: OK"
+   gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
+     --method POST \
+     -f body="<Review Type> Review" \
+     -f event="REQUEST_CHANGES" \
+     -f comments='[
+       {"path": "<file>", "line": <N>, "body": "**Issue:** <problem>\n\n**Fix:** <solution>"}
+     ]'
    ```
 
-### For `architect` Agent
-
-When spawned to review a PR:
-
-1. **Read the diff**: `gh pr diff <N>`
-2. **Check for**:
-   - Server Components used by default
-   - `'use client'` only where needed
-   - Server Actions for mutations
-   - Proper data fetching patterns
-   - No sensitive data in client bundles
-3. **Post findings to GitHub**:
+4. **If no issues, approve:**
    ```bash
-   gh pr comment <N> --body "$(cat <<'EOF'
-   ## Architecture Review
-
-   ### Issues Found
-   - `app/upload/page.tsx` - Using client-side fetch for initial data, should use Server Component
-
-   ### Patterns
-   - Server Components: OK
-   - Data fetching: Issue above
-   EOF
-   )"
+   gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
+     --method POST \
+     -f body="<Review Type> Review - LGTM" \
+     -f event="APPROVE"
    ```
-4. **If no issues**:
-   ```bash
-   gh pr comment <N> --body "## Architecture Review\n\nFollows Next.js 15 patterns correctly."
-   ```
+
+### reviewer Agent Checklist
+
+Post inline comments for:
+- `any` types in TypeScript
+- Functions > 50 lines
+- Missing error handling
+- console.log statements (not .error/.warn)
+- Commented-out code
+- Unclear naming
+
+### security Agent Checklist
+
+Post inline comments for:
+- Missing input validation (Zod)
+- Missing auth/authz checks
+- SQL injection risks
+- XSS vulnerabilities
+- Hardcoded secrets
+- PII handling violations (Swiss nFADP)
+
+### architect Agent Checklist
+
+Post inline comments for:
+- `'use client'` without justification
+- Client-side fetch for initial data
+- Not using Server Actions for mutations
+- Sensitive data in client bundles
 
 ---
 
-## Example Invocation
+## Resolving Comments
 
-When you run `/pr-review 21`:
+After author pushes fixes:
 
-```
-[CONTEXT] Fetching PR #21...
-- Title: feat(storage): add MinIO integration
-- Files: 5 changed (+245 -12)
+1. **Author marks each comment as resolved** in GitHub UI
+   - Or replies "Fixed in <commit>" and resolves
 
-[REVIEW] Spawning review agents in parallel...
+2. **Re-run review:**
+   ```bash
+   /pr-review <N>
+   ```
 
-Task("Review PR #21 code quality", reviewer)
-Task("Review PR #21 security", security)
-Task("Review PR #21 architecture", architect)
+3. **Agents check if their previous issues are fixed:**
+   - If fixed: Approve
+   - If not fixed: Leave new comment explaining what's still wrong
 
-[WAIT] Agents analyzing...
-
-[RESULTS]
-- reviewer: Posted comment - 2 issues found
-- security: Posted comment - No issues
-- architect: Posted comment - 1 issue found
-
-[ACTION] Issues found - requesting changes...
-gh pr review 21 --request-changes
-
-[DONE] Review complete. See PR #21 for comments.
-```
+4. **Continue until no unresolved threads**
 
 ---
 
-## After Fixes
+## Final Approval & Merge
 
-When author fixes issues and requests re-review:
+When all agents approve and no unresolved comments:
 
-1. Run `/pr-review <N>` again
-2. Agents re-analyze the updated code
-3. Post new comments or confirm resolution
-4. Approve when all clear
+```bash
+# Check all reviews are approved
+gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
+  --jq '[.[] | select(.state == "APPROVED")] | length'
+
+# Check no pending comments
+gh api repos/novacekm/BriefBot/pulls/<N>/comments \
+  --jq '[.[] | select(.in_reply_to_id == null)] | length'
+
+# If both pass, merge
+gh pr merge <N> --squash --delete-branch
+```
 
 ---
 
 ## Safety Requirements
 
-1. **Local CI before every push:** Run `npm run pre-pr` and ensure it passes
-2. **Address ALL review comments:** Don't leave unresolved threads
-3. **Re-review after fixes:** Run `/pr-review <N>` again after pushing fixes
-4. **Never skip review:** Even for "small" changes
+1. **Local CI before every push:** `npm run pre-pr` must pass
+2. **Resolve ALL inline comments:** Each must be addressed and marked resolved
+3. **Re-review after fixes:** Run `/pr-review <N>` again
+4. **No unresolved threads:** Cannot merge with open review comments
 
 ---
 
 ## Quick Reference
 
 ```bash
-# Review a PR (spawns agents, posts to GitHub)
+# Review a PR (creates inline comments)
 /pr-review <N>
 
-# View posted comments
-gh pr view <N> --comments
+# View review comments
+gh api repos/novacekm/BriefBot/pulls/<N>/comments
 
-# After fixes, re-review
+# Check review status
+gh pr view <N>
+
+# After author fixes, re-review
 /pr-review <N>
 ```
