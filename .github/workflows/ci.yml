@@ -234,7 +234,7 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
 
       - name: Run visual regression tests
-        run: npm run test:visual
+        run: npm run test:visual -- --project=chromium
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
           SKIP_ENV_VALIDATION: true

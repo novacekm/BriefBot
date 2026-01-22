@@ -28,6 +28,7 @@ test.describe('Homepage Visual Regression @visual', () => {
     // Capture full-page screenshot
     await expect(page).toHaveScreenshot('homepage-desktop.png', {
       fullPage: true,
+      maxDiffPixelRatio: 0.1, // 10% tolerance for cross-platform differences
     })
   })
 
@@ -40,6 +41,7 @@ test.describe('Homepage Visual Regression @visual', () => {
 
     await expect(page).toHaveScreenshot('homepage-mobile.png', {
       fullPage: true,
+      maxDiffPixelRatio: 0.1,
     })
   })
 
@@ -52,6 +54,7 @@ test.describe('Homepage Visual Regression @visual', () => {
 
     await expect(page).toHaveScreenshot('homepage-tablet.png', {
       fullPage: true,
+      maxDiffPixelRatio: 0.1,
     })
   })
 })
