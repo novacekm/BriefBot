@@ -24,7 +24,7 @@ gh pr view <N> --json number,title,body,files,headRefName
 # Get the diff
 gh pr diff <N>
 
-# Check for unresolved review threads
+# Check comment count (resolution status requires GitHub UI check)
 gh api repos/novacekm/BriefBot/pulls/<N>/comments --jq 'length'
 ```
 
@@ -37,6 +37,8 @@ Task("Review PR #<N> for code quality - post inline comments", reviewer)
 Task("Review PR #<N> for security - post inline comments", security)
 Task("Review PR #<N> for architecture - post inline comments", architect)
 ```
+
+> **Solo dev tip:** For small changes (1-2 files, < 50 lines), spawn only one general-purpose agent instead of all three. Use full multi-agent review for features, security-sensitive changes, or architecture modifications.
 
 ### Step 3: Agents Post Inline Comments
 
@@ -70,7 +72,7 @@ gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
   -f event="APPROVE"
 ```
 
-### Step 4: Review Loop Until All Resolved
+### Step 4: Review Loop Until All Resolved (max 3 iterations)
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -94,12 +96,16 @@ gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
 └──────────────────────────────────────────────────────┘
 ```
 
-**Check for unresolved comments:**
+> **Iteration limit:** After 3 review cycles, if issues remain, add a comment explaining why the approach is intentional and request a final decision. This prevents infinite loops from disagreements.
+
+**Check for comments (resolution status must be verified in GitHub UI):**
 ```bash
-# Get pending review comments
+# Get top-level comment count (REST API cannot check resolved status)
 gh api repos/novacekm/BriefBot/pulls/<N>/comments \
   --jq '[.[] | select(.in_reply_to_id == null)] | length'
 ```
+
+> **Note:** The REST API does not expose `isResolved` status. Check resolution visually in the "Files changed" tab, or use the GraphQL API with `PullRequestReviewThread.isResolved`.
 
 ---
 
@@ -109,10 +115,12 @@ gh api repos/novacekm/BriefBot/pulls/<N>/comments \
 
 When reviewing a PR:
 
-1. **Get the diff with line numbers:**
+1. **Get the diff:**
    ```bash
    gh pr diff <N>
    ```
+
+   > Line numbers are in hunk headers: `@@ -14,5 +18,10 @@` means new file starts at line 18. Count lines from there.
 
 2. **Identify issues with specific file paths and line numbers**
 
@@ -190,16 +198,22 @@ After author pushes fixes:
 When all agents approve and no unresolved comments:
 
 ```bash
-# Check all reviews are approved
+# Check all 3 review types approved (look for review body prefixes)
 gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
   --jq '[.[] | select(.state == "APPROVED")] | length'
+# Should be >= 3 (Code Quality, Security, Architecture)
 
-# Check no pending comments
+# Verify review types present
+gh api repos/novacekm/BriefBot/pulls/<N>/reviews \
+  --jq '[.[] | select(.state == "APPROVED") | .body] | join("\n")'
+# Should contain "Code Quality", "Security", and "Architecture"
+
+# Check no pending comments (verify resolution in GitHub UI)
 gh api repos/novacekm/BriefBot/pulls/<N>/comments \
   --jq '[.[] | select(.in_reply_to_id == null)] | length'
 
-# If both pass, merge
-gh pr merge <N> --squash --delete-branch
+# If all pass, merge (--auto waits for CI)
+gh pr merge <N> --squash --auto --delete-branch
 ```
 
 ---
