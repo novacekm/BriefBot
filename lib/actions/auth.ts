@@ -74,18 +74,19 @@ export async function register(
 }
 
 export async function authenticate(
-  _prevState: string | undefined,
+  _prevState: AuthActionResult | undefined,
   formData: FormData
-): Promise<string | undefined> {
+): Promise<AuthActionResult | undefined> {
   try {
     await signIn("credentials", formData);
+    return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return "Invalid email or password";
+          return { error: "Invalid email or password" };
         default:
-          return "Something went wrong";
+          return { error: "Something went wrong" };
       }
     }
     throw error;

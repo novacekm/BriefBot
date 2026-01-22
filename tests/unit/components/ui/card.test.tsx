@@ -88,16 +88,36 @@ describe("CardTitle", () => {
     expect(title).toHaveClass("tracking-tight");
   });
 
-  it("renders as div element", () => {
+  it("renders as h3 element by default", () => {
     render(<CardTitle data-testid="title">Title</CardTitle>);
     const title = screen.getByTestId("title");
-    expect(title.tagName).toBe("DIV");
+    expect(title.tagName).toBe("H3");
+  });
+
+  it("renders as h1 when specified", () => {
+    render(
+      <CardTitle as="h1" data-testid="title">
+        Title
+      </CardTitle>
+    );
+    const title = screen.getByTestId("title");
+    expect(title.tagName).toBe("H1");
+  });
+
+  it("renders as h2 when specified", () => {
+    render(
+      <CardTitle as="h2" data-testid="title">
+        Title
+      </CardTitle>
+    );
+    const title = screen.getByTestId("title");
+    expect(title.tagName).toBe("H2");
   });
 
   it("forwards ref correctly", () => {
-    const ref = createRef<HTMLDivElement>();
+    const ref = createRef<HTMLHeadingElement>();
     render(<CardTitle ref={ref}>Title</CardTitle>);
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
   });
 
   it("applies custom className", () => {
