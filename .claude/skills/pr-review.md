@@ -1,6 +1,7 @@
 # PR Review Skill
 
 > **Invoke with:** `/pr-review <pr-number>`
+> **Purpose:** Multi-agent PR review with findings posted directly to GitHub
 
 ## What This Does
 
@@ -25,12 +26,14 @@ gh issue view <linked-issue-number> --json body
 
 ### Step 2: Spawn Review Agents (PARALLEL)
 
-Spawn these agents in a SINGLE message to review in parallel:
+Spawn these agents in a SINGLE message to review in parallel.
+
+> **Note:** The syntax below is pseudo-code. In practice, use the Task tool with `subagent_type` parameter pointing to agents defined in `.claude/agents/`.
 
 ```
-Task("Review PR #<N> for code quality and TypeScript issues", reviewer)
-Task("Review PR #<N> for security and nFADP compliance", security)
-Task("Review PR #<N> for architecture patterns", architect)
+Task("Review PR #<N> for code quality", subagent_type=reviewer)
+Task("Review PR #<N> for security", subagent_type=security)
+Task("Review PR #<N> for architecture", subagent_type=architect)
 ```
 
 Each agent:
@@ -215,15 +218,24 @@ When author fixes issues and requests re-review:
 
 ---
 
+## Safety Requirements
+
+1. **Local CI before every push:** Run `npm run pre-pr` and ensure it passes
+2. **Address ALL review comments:** Don't leave unresolved threads
+3. **Re-review after fixes:** Run `/pr-review <N>` again after pushing fixes
+4. **Never skip review:** Even for "small" changes
+
+---
+
 ## Quick Reference
 
 ```bash
 # Review a PR (spawns agents, posts to GitHub)
-/pr-review 21
+/pr-review <N>
 
 # View posted comments
-gh pr view 21 --comments
+gh pr view <N> --comments
 
 # After fixes, re-review
-/pr-review 21
+/pr-review <N>
 ```
