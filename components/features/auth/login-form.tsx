@@ -16,15 +16,12 @@ import { Label } from "@/components/ui/label";
 import { authenticate } from "@/lib/actions/auth";
 
 export function LoginForm() {
-  const [errorMessage, formAction, isPending] = useActionState(
-    authenticate,
-    undefined
-  );
+  const [state, formAction, isPending] = useActionState(authenticate, undefined);
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle as="h1" className="text-2xl font-semibold tracking-tight">
           Sign in
         </CardTitle>
         <CardDescription>Access your documents</CardDescription>
@@ -58,12 +55,12 @@ export function LoginForm() {
             />
           </div>
 
-          {errorMessage && (
+          {state?.error && (
             <div
               role="alert"
               className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
             >
-              {errorMessage}
+              {state.error}
             </div>
           )}
 

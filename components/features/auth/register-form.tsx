@@ -21,7 +21,7 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle as="h1" className="text-2xl font-semibold tracking-tight">
           Create account
         </CardTitle>
         <CardDescription>Start using BriefBot</CardDescription>
