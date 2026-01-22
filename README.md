@@ -23,10 +23,11 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 - E2E testing (Playwright) across 5 browsers
 - Visual regression testing
 - Branch protection requiring all CI checks
+- User authentication (NextAuth.js with credentials provider)
+- shadcn/ui component library
 
 ### Not Yet Implemented
 
-- User authentication
 - Document upload UI
 - OCR processing
 - Translation service
@@ -38,9 +39,9 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 
 ### MVP (P0-critical)
 
-- [ ] [#1 Supabase Authentication Setup](https://github.com/novacekm/BriefBot/issues/1)
-- [ ] [#2 shadcn/ui Component Library Setup](https://github.com/novacekm/BriefBot/issues/2)
-- [ ] [#3 MinIO Storage Integration](https://github.com/novacekm/BriefBot/issues/3)
+- [x] [#24 Local Authentication with NextAuth.js](https://github.com/novacekm/BriefBot/issues/24) (replaces #1)
+- [x] [#2 shadcn/ui Component Library Setup](https://github.com/novacekm/BriefBot/issues/2)
+- [ ] [#26 MinIO Storage Integration](https://github.com/novacekm/BriefBot/issues/26)
 - [ ] [#4 Document Upload UI](https://github.com/novacekm/BriefBot/issues/4)
 - [ ] [#5 Document Upload Server Action](https://github.com/novacekm/BriefBot/issues/5)
 - [ ] [#6 OCR Integration with GPT-4 Vision](https://github.com/novacekm/BriefBot/issues/6)
@@ -69,7 +70,7 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 | Backend | Next.js Server Actions, Node.js |
 | Database | PostgreSQL 16, Prisma ORM |
 | Storage | MinIO (S3-compatible) |
-| Auth | Supabase |
+| Auth | NextAuth.js (local credentials) |
 | AI/ML | OpenAI GPT-4 Vision, Anthropic Claude |
 | Testing | Playwright, Vitest |
 | CI/CD | GitHub Actions |
@@ -121,9 +122,8 @@ MINIO_PORT="9000"
 MINIO_ACCESS_KEY="minioadmin"
 MINIO_SECRET_KEY="minioadmin"
 
-# Supabase (for auth)
-NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+# Authentication (NextAuth.js)
+AUTH_SECRET="your-auth-secret"  # Generate with: openssl rand -base64 32
 
 # AI Services
 OPENAI_API_KEY="your-openai-key"
