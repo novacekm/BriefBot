@@ -1,123 +1,80 @@
 # Branch Protection Rules
 
-## CRITICAL: Direct Pushes to Master are FORBIDDEN
+## Status: ACTIVE (GitHub Enforced)
 
-This repository enforces a strict PR-based development workflow. **Direct pushes to master are not allowed**, regardless of whether GitHub branch protection is enabled.
+Branch protection is now enforced at the GitHub level. **Direct pushes to master are blocked by GitHub.**
 
-### How This is Enforced
+### Protection Summary
 
-1. **Programmatically by Claude** - The `/pr-review` and `/task-loop` skills enforce PR-based workflow
-2. **By Convention** - All developers and AI assistants must follow the PR workflow
-3. **By GitHub Branch Protection** - When available (requires GitHub Pro for private repos)
-
-### What This Means
-
-- **NEVER** run `git push origin master`
-- **ALWAYS** create a feature branch: `git checkout -b issue-<number>-<title>`
-- **ALWAYS** create a PR: `gh pr create`
-- **ALWAYS** get approval before merging (admin or Claude on admin's behalf)
+| Setting | Value |
+|---------|-------|
+| Direct pushes to master | **BLOCKED** |
+| PRs required | **YES** |
+| CI must pass before merge | **YES** |
+| Force pushes | **BLOCKED** |
+| Branch deletion | **BLOCKED** |
+| Enforced for admins | **YES** |
 
 ---
 
-## Note on Private Repositories
+## Required Status Checks
 
-GitHub branch protection rules require GitHub Pro for private repositories.
-Until then, the `/pr-review` skill enforces these rules programmatically.
+Before a PR can be merged, these CI jobs must pass:
 
-## Branch Protection Rules for Master Branch
+- **Lint** - ESLint checks
+- **Type Check** - TypeScript compilation
+- **Test** - Playwright tests
+- **Build** - Next.js build
 
-These settings are enforced (programmatically now, by GitHub when available):
+PRs are blocked from merging until all checks are green.
 
-### Required Status Checks
-- [x] Require status checks to pass before merging
-- [x] Require branches to be up to date before merging
+## Workflow
 
-**Required checks:**
-- `lint`
-- `type-check`
-- `test`
-- `build`
+```
+master (protected)
+    │
+    └─── feature branch ───► PR ───► CI Checks ───► Merge
+              │                          │
+         git checkout -b           Must pass:
+         issue-<N>-<title>         Lint, Type Check,
+                                   Test, Build
+```
 
-### Pull Request Reviews
-- [x] Require a pull request before merging
-- [x] Require approvals: 1
-- [x] Dismiss stale pull request approvals when new commits are pushed
+### Creating a Feature Branch
 
-### Additional Settings
-- [x] Require conversation resolution before merging
-- [x] Do not allow bypassing the above settings
-- [ ] Allow force pushes: OFF
-- [ ] Allow deletions: OFF
-
-## Current Enforcement (Without Branch Protection)
-
-The `/pr-review` skill enforces these rules manually:
-
-1. **Before approving, verify:**
-   - All CI checks pass (`gh pr checks <number>`)
-   - Code review checklist passes
-   - No merge conflicts
-
-2. **Auto-merge only when:**
-   - PR is approved
-   - All CI status checks are green
-   - Using squash merge (`gh pr merge --squash --auto`)
-
-3. **If CI fails:**
-   - Do not approve
-   - Request changes with specific failures
-
-## Setting Up Branch Protection (When Available)
-
-Via GitHub UI:
-1. Go to Settings → Branches
-2. Add rule for `master`
-3. Apply settings above
-
-Via GitHub CLI (when available):
 ```bash
-gh api repos/novacekm/BriefBot/branches/master/protection \
-  -X PUT \
-  -H "Accept: application/vnd.github+json" \
-  -f required_status_checks='{"strict":true,"contexts":["lint","type-check","test","build"]}' \
-  -f enforce_admins=true \
-  -f required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true}' \
-  -f restrictions=null
+# Always branch from master
+git checkout master
+git pull origin master
+git checkout -b issue-<number>-<short-title>
 ```
 
-## Current Workflow (Enforced by Claude)
+### Creating a PR
 
-```
-Feature Branch → PR → CI Checks → PR Review → Approval → Squash Merge
-     ↑                              ↑           ↑
-     │                              │           │
- git checkout -b              /pr-review    gh pr merge --squash --auto
+```bash
+git push -u origin issue-<number>-<short-title>
+gh pr create --title "type(scope): description" --body "..."
 ```
 
-**The `/pr-review` skill acts as the gate**, only approving and merging when:
-- All CI checks pass
-- Code quality standards met
-- No security issues found
+### Merging (after CI passes)
 
-### Claude's Role in Branch Protection
+```bash
+gh pr merge <number> --squash --delete-branch
+```
 
-Since GitHub branch protection requires Pro for private repos, Claude enforces protection programmatically:
+## What's Blocked
 
-1. **Before any push**: Claude checks the target branch
-2. **If target is master**: Claude refuses and creates a feature branch instead
-3. **For PRs**: Claude can approve on behalf of admin when criteria are met
-4. **For merges**: Claude only merges via `gh pr merge`, never direct push
+GitHub will reject:
+- `git push origin master` - Direct pushes
+- `git push --force origin master` - Force pushes
+- Merging PRs with failing CI
 
-### Admin Approval Delegation
+## Repository Visibility
 
-The admin (novacekm) has delegated PR approval authority to Claude for:
-- Automated task-loop PRs where all checks pass
-- Simple changes with no security implications
-- PRs without the "needs-human-review" label
+This repository is **public** to enable GitHub branch protection on the free tier.
 
-Human review is still required for:
-- Security-sensitive changes
-- Architecture changes
-- Database migrations
-- Configuration changes
-- Any PR flagged for human review
+## Admin Notes
+
+- `enforce_admins: true` - Even admins cannot bypass protection
+- `dismiss_stale_reviews: true` - New commits invalidate existing approvals
+- `strict: true` - Branch must be up to date before merging
