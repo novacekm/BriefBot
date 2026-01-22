@@ -11,7 +11,17 @@ export default defineConfig({
   timeout: 30000,
   expect: {
     timeout: 5000,
+    // Visual comparison settings - tolerant for cross-platform rendering differences
+    toHaveScreenshot: {
+      // Allow up to 10% pixel difference for cross-platform compatibility (macOS vs Linux)
+      maxDiffPixelRatio: 0.1,
+      // Also allow absolute pixel difference threshold
+      maxDiffPixels: 500,
+    },
   },
+
+  // Snapshot path template without platform for cross-platform baselines
+  snapshotPathTemplate: '{testDir}/{testFileDir}/__snapshots__/{testFileName}-snapshots/{arg}{ext}',
 
   // Run tests in parallel
   fullyParallel: true,
