@@ -55,6 +55,13 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		zIndex: {
+  			base: 'var(--z-base)',
+  			dropdown: 'var(--z-dropdown)',
+  			sticky: 'var(--z-sticky)',
+  			modal: 'var(--z-modal)',
+  			'skip-link': 'var(--z-skip-link)'
   		}
   	}
   },

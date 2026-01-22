@@ -24,6 +24,12 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-skip-link focus:left-4 focus:top-4 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
         <div className="relative flex min-h-screen flex-col">
           <Header user={session?.user} />
           <main id="main-content" className="flex-1">
