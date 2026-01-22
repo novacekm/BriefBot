@@ -232,20 +232,41 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
 
       - name: Run visual regression tests
+        id: visual-tests
+        continue-on-error: true
         run: npm run test:visual -- --project=chromium
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
           SKIP_ENV_VALIDATION: true
 
+      - name: Update baselines if tests failed
+        if: steps.visual-tests.outcome == 'failure'
+        run: npm run test:visual -- --project=chromium --update-snapshots
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/briefbot_visual
+          SKIP_ENV_VALIDATION: true
+
+      - name: Upload updated baselines
+        uses: actions/upload-artifact@v4
+        if: steps.visual-tests.outcome == 'failure'
+        with:
+          name: visual-baselines-linux
+          path: tests/visual/__snapshots__/
+          retention-days: 30
+
       - name: Upload visual diff
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: steps.visual-tests.outcome == 'failure'
         with:
           name: visual-regression-diff
           path: |
             tests/visual/**/*-diff.png
             tests/visual/**/*-actual.png
           retention-days: 7
+
+      - name: Fail if visual tests failed
+        if: steps.visual-tests.outcome == 'failure'
+        run: exit 1
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
