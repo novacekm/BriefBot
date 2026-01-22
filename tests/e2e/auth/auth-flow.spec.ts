@@ -41,6 +41,67 @@ test.describe('Authentication Flow', () => {
     await expect(page).toHaveURL('/upload')
   })
 
+  test('should show protected nav links when authenticated', async ({ page }) => {
+    // Set desktop viewport to verify desktop nav
+    await page.setViewportSize({ width: 1280, height: 720 })
+
+    // Register and login
+    const navUser = {
+      email: `nav-test-${Date.now()}@example.com`,
+      password: 'TestPass123!',
+    }
+
+    await page.goto('/register')
+    await page.fill('input[name="email"]', navUser.email)
+    await page.fill('input[name="password"]', navUser.password)
+    await page.fill('input[name="confirmPassword"]', navUser.password)
+    await page.click('button[type="submit"]')
+
+    // Wait for redirect
+    await expect(page).toHaveURL('/documents', { timeout: 10000 })
+
+    // Go to homepage to check nav
+    await page.goto('/')
+
+    // Desktop navigation should now be visible with protected links
+    await expect(page.locator('header nav')).toBeVisible()
+    await expect(page.locator('header').locator('a[href="/upload"]')).toBeVisible()
+    await expect(page.locator('header').locator('a[href="/documents"]')).toBeVisible()
+    await expect(page.locator('header').locator('a[href="/settings"]')).toBeVisible()
+  })
+
+  test('should show protected nav links in mobile menu when authenticated', async ({ page }) => {
+    // Set mobile viewport
+    await page.setViewportSize({ width: 375, height: 667 })
+
+    // Register and login
+    const mobileNavUser = {
+      email: `mobile-nav-test-${Date.now()}@example.com`,
+      password: 'TestPass123!',
+    }
+
+    await page.goto('/register')
+    await page.fill('input[name="email"]', mobileNavUser.email)
+    await page.fill('input[name="password"]', mobileNavUser.password)
+    await page.fill('input[name="confirmPassword"]', mobileNavUser.password)
+    await page.click('button[type="submit"]')
+
+    // Wait for redirect
+    await expect(page).toHaveURL('/documents', { timeout: 10000 })
+
+    // Go to homepage
+    await page.goto('/')
+
+    // Open mobile menu
+    await page.click('button[aria-label="Open menu"]')
+
+    // Protected nav links should be visible in mobile menu
+    await expect(page.locator('[role="dialog"]')).toBeVisible()
+    await expect(page.locator('[role="dialog"]').locator('a[href="/upload"]')).toBeVisible()
+    await expect(page.locator('[role="dialog"]').locator('a[href="/documents"]')).toBeVisible()
+    await expect(page.locator('[role="dialog"]').locator('a[href="/settings"]')).toBeVisible()
+  })
+
   test('should be able to logout', async ({ page }) => {
     // Set desktop viewport first to ensure user menu is visible
     await page.setViewportSize({ width: 1280, height: 720 })
