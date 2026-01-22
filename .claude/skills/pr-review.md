@@ -1,308 +1,415 @@
-# PR Review - Automated Pull Request Review Skill
+# PR Review Skill
 
-> **Invoke with:** `/pr-review <pr-number>` or "review PR #X"
-> **Purpose:** Automated PR review with approval and merge capability
+> **Invoke with:** `/pr-review <pr-number>`
+> **Purpose:** Thorough PR review with actionable feedback and fix loops
 
-## What This Skill Does
+## Overview
 
-Reviews a pull request against BriefBot quality standards and:
-1. **Analyzes** code changes for quality, security, and patterns
-2. **Validates** tests are included and passing
-3. **Checks** acceptance criteria from linked issue
-4. **Decides** to approve, request changes, or flag for human review
-5. **Merges** automatically if all checks pass
+This skill performs **real code review** - not rubber-stamping. It:
+1. Analyzes every changed file
+2. Leaves specific comments on problematic code
+3. Requests changes when issues are found
+4. Repeats until all issues are addressed
+5. Only approves when quality standards are met
+
+---
 
 ## Review Process
 
-### Step 1: Fetch PR Information
+### Step 1: Fetch PR Context
 
 ```bash
 # Get PR details
-gh pr view <number> --json number,title,body,state,labels,files,additions,deletions,baseRefName,headRefName
+gh pr view <N> --json number,title,body,files,additions,deletions,commits
 
-# Get linked issue
-gh pr view <number> --json body | grep -o '#[0-9]*'
+# Get the diff
+gh pr diff <N>
 
-# Get CI status
-gh pr checks <number>
+# Get linked issue for acceptance criteria
+gh issue view <linked-issue> --json body
 ```
 
-### Step 2: Review Changed Files
+### Step 2: Analyze Each Changed File
 
+For EVERY file in the PR, review for:
+
+**Code Quality:**
+- TypeScript: No `any` types, proper typing
+- Functions < 50 lines, single responsibility
+- Clear naming, no magic numbers
+- Error handling present
+- No console.log (except errors)
+- No commented-out code
+
+**Architecture:**
+- Server Components by default
+- `'use client'` only where needed
+- Server Actions for mutations
+- No sensitive data in client bundles
+
+**Security (Swiss nFADP):**
+- Input validation with Zod
+- Auth/authz checks
+- No SQL injection, XSS risks
+- No secrets in code
+- PII handling compliant
+
+**Testing:**
+- Tests included for new code
+- Edge cases covered
+
+### Step 3: Leave PR Comments
+
+For EACH issue found, leave a **specific comment** on the PR:
+
+**For line-specific issues:**
 ```bash
-# Get diff
-gh pr diff <number>
-
-# List changed files
-gh pr view <number> --json files --jq '.files[].path'
+# Create a review with line comments
+gh api repos/{owner}/{repo}/pulls/<N>/reviews \
+  --method POST \
+  -f event='COMMENT' \
+  -f body='Review in progress...' \
+  -f comments='[
+    {
+      "path": "src/lib/storage.ts",
+      "line": 42,
+      "body": "**Issue:** Using `any` type here.\n\n**Suggestion:** Define a proper type:\n```typescript\ntype StorageConfig = {\n  bucket: string;\n  endpoint: string;\n};\n```"
+    }
+  ]'
 ```
 
-### Step 3: Run Review Checklist
-
-**Code Quality Checks:**
-- [ ] No `any` types in TypeScript
-- [ ] Functions are reasonably sized (< 50 lines)
-- [ ] Clear, descriptive naming
-- [ ] No code duplication
-- [ ] Error handling implemented
-- [ ] No console.log (except error/warn)
-- [ ] No commented-out code
-- [ ] No TODOs (should be issues)
-
-**Architecture Checks:**
-- [ ] Server Components used by default
-- [ ] `'use client'` only where necessary
-- [ ] Server Actions for mutations
-- [ ] Proper data fetching patterns
-- [ ] No sensitive data in client bundles
-
-**Security Checks:**
-- [ ] Input validation with Zod
-- [ ] Authentication enforced where needed
-- [ ] Authorization checked (user owns resource)
-- [ ] No SQL injection risks
-- [ ] No XSS vulnerabilities
-- [ ] No secrets in code
-- [ ] Swiss nFADP considerations
-
-**Testing Checks:**
-- [ ] Tests included for new code
-- [ ] Tests pass locally
-- [ ] Edge cases covered
-- [ ] No test skips without reason
-
-**Accessibility Checks (UI changes):**
-- [ ] Touch targets >= 44x44px
-- [ ] Color contrast sufficient
-- [ ] Keyboard navigation works
-- [ ] ARIA labels where needed
-
-### Step 4: Check CI Status
-
+**For general issues:**
 ```bash
-# Wait for CI and get status
-gh pr checks <number> --watch
+gh pr comment <N> --body "$(cat <<'EOF'
+## Review Comment
 
-# Check if all required checks pass
-gh pr checks <number> --json name,state --jq '.[] | select(.state != "SUCCESS")'
+**File:** `src/lib/storage.ts`
+
+**Issue:** Missing error handling for network failures.
+
+**Suggestion:**
+```typescript
+try {
+  await client.putObject(...)
+} catch (error) {
+  if (error instanceof NetworkError) {
+    throw new StorageError('Network unavailable', { cause: error });
+  }
+  throw error;
+}
 ```
-
-### Step 5: Make Decision
-
-**Decision Matrix:**
-
-| Condition | Action |
-|-----------|--------|
-| All checks pass + CI green | Approve & Auto-merge |
-| Minor issues (style, naming) | Approve with comments |
-| Moderate issues (missing tests) | Request changes |
-| Security concerns | Request changes + flag |
-| Major architecture issues | Request human review |
-
-### Step 6: Execute Decision
-
-**If Approved:**
-```bash
-# Approve PR
-gh pr review <number> --approve --body "$(cat <<'EOF'
-## Automated Review: APPROVED
-
-**Review Summary:**
-- Code quality: ✅ Passed
-- Security: ✅ No issues found
-- Tests: ✅ Included and passing
-- Architecture: ✅ Follows patterns
-
-**Notes:**
-<any comments or suggestions for future>
-
-Merging when CI passes.
 EOF
 )"
-
-# Enable auto-merge (squash)
-gh pr merge <number> --squash --auto --delete-branch
 ```
 
-**If Changes Requested:**
-```bash
-gh pr review <number> --request-changes --body "$(cat <<'EOF'
-## Automated Review: CHANGES REQUESTED
+### Step 4: Request Changes or Approve
 
-**Issues Found:**
+**If issues found:**
+```bash
+gh pr review <N> --request-changes --body "$(cat <<'EOF'
+## Review: Changes Requested
+
+Found **X issues** that need to be addressed before merge.
 
 ### Must Fix
-1. <issue 1 with file:line reference>
-2. <issue 2>
+1. `src/lib/storage.ts:42` - Using `any` type
+2. `src/lib/storage.ts:67` - Missing error handling
+3. `src/actions/upload.ts:15` - No input validation
 
-### Suggestions
-- <optional improvement>
+### Suggestions (Optional)
+- Consider extracting the retry logic into a utility
 
-Please address the "Must Fix" items and push updates.
+Please address the "Must Fix" items, run `npm run pre-pr`, and push updates.
+
+I'll re-review when ready.
 EOF
 )"
 ```
 
-**If Human Review Needed:**
+**If all checks pass:**
 ```bash
-gh pr comment <number> --body "$(cat <<'EOF'
-## Automated Review: HUMAN REVIEW REQUESTED
+gh pr review <N> --approve --body "$(cat <<'EOF'
+## Review: Approved
 
-This PR requires human review due to:
-- <reason 1>
-- <reason 2>
+All review checks passed:
+- ✅ Code quality
+- ✅ Architecture patterns
+- ✅ Security considerations
+- ✅ Tests included
+- ✅ CI passing
 
-@novacekm please review when available.
+Merging.
 EOF
 )"
 
-# Add label
-gh pr edit <number> --add-label "needs-human-review"
+gh pr merge <N> --squash --auto --delete-branch
 ```
 
-## Confidence Levels
+---
 
-The skill operates with confidence thresholds:
+## Review-Fix Loop
 
-| Confidence | Criteria | Action |
-|------------|----------|--------|
-| **High** (auto-merge) | Simple changes, tests pass, clear patterns | Approve + merge |
-| **Medium** (approve) | Good code, minor questions | Approve, note questions |
-| **Low** (request changes) | Issues found, fixable | Request specific changes |
-| **Very Low** (escalate) | Complex, security, architecture | Flag for human |
-
-## Auto-Merge Conditions
-
-For automatic merge, ALL must be true:
-1. All review checklist items pass
-2. All CI checks pass (GitHub Actions)
-3. No merge conflicts
-4. PR is not marked "needs-human-review"
-5. PR is not a draft
-6. **PR has been approved** (by admin or Claude on admin's behalf)
-7. **Changes came through a feature branch** (never direct to master)
-
-## Example Review
+When changes are requested, the following loop runs:
 
 ```
-Claude: Reviewing PR #15...
-
-[FETCH] Getting PR details...
-- Title: feat(storage): add MinIO integration
-- Changes: +245 -12 across 5 files
-- Linked issue: #3
-
-[ANALYZE] Reviewing code changes...
-- lib/storage/minio.ts: New file, storage utilities
-- lib/actions/upload.ts: Uses new storage functions
-- tests/storage.test.ts: Tests included
-
-[CHECKLIST] Running quality checks...
-✅ No `any` types
-✅ Functions < 50 lines
-✅ Clear naming
-✅ Error handling present
-✅ Tests included
-✅ No security issues
-
-[CI] Checking CI status...
-✅ lint: passed
-✅ type-check: passed
-✅ test: passed
-✅ build: passed
-
-[DECISION] All checks pass, high confidence
-→ Approving PR
-→ Enabling auto-merge
-
-[RESULT] PR #15 approved and will merge when CI completes.
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  ┌─────────┐    ┌──────────┐    ┌─────────────┐   │
+│  │ REVIEW  │───►│  ISSUES  │───►│ FIX & PUSH  │   │
+│  └─────────┘    │  FOUND?  │    └─────────────┘   │
+│       ▲         └──────────┘           │          │
+│       │              │                 │          │
+│       │              │ No              ▼          │
+│       │              ▼          ┌───────────┐     │
+│       │         ┌────────┐      │ pre-pr    │     │
+│       │         │APPROVE │      │ (local)   │     │
+│       │         │& MERGE │      └───────────┘     │
+│       │         └────────┘           │          │
+│       │                              ▼          │
+│       └──────────────────────────────┘          │
+│                                                     │
+└─────────────────────────────────────────────────────┘
 ```
 
-## Safety Rails
+### Fix Process
 
-1. **NEVER push directly to master** - All changes MUST go through PRs
-2. **Never force merge** - Always use `--auto` to wait for CI
-3. **Never skip CI** - All checks must pass
-4. **Escalate uncertainty** - When in doubt, request human review
-5. **Document decisions** - Always explain why in review comment
-6. **Preserve branch** - Only delete after successful merge
+When reviewer leaves comments:
 
-### Pre-Review Safety Check
+1. **Read all comments:**
+   ```bash
+   gh pr view <N> --comments
+   gh api repos/{owner}/{repo}/pulls/<N>/comments
+   ```
 
-Before reviewing ANY PR, verify:
-```bash
-# Ensure we're not accidentally on master with uncommitted changes
-git status
+2. **Address each issue:**
+   - Fix the code as suggested
+   - If you disagree, reply to the comment explaining why
 
-# Ensure we're reviewing a PR, not pushing to master
-gh pr view <number> --json baseRefName --jq '.baseRefName'
-# Must target 'master' as base, changes come FROM feature branch
+3. **Run local validation:**
+   ```bash
+   npm run pre-pr  # MUST pass before pushing
+   ```
+
+4. **Push fixes:**
+   ```bash
+   git add .
+   git commit -m "fix: address review comments
+
+   - Fix any types in storage.ts
+   - Add error handling
+   - Add input validation"
+   git push
+   ```
+
+5. **Request re-review:**
+   ```bash
+   gh pr comment <N> --body "Addressed all review comments. Ready for re-review."
+   ```
+
+6. **Reviewer re-runs `/pr-review <N>`**
+
+---
+
+## Review Checklist
+
+### Code Quality (All Files)
+
+| Check | Fail Condition | Auto-fixable |
+|-------|----------------|--------------|
+| No `any` types | Found `any` or implicit any | Sometimes |
+| Function size | Function > 50 lines | No |
+| Naming | Unclear names, magic numbers | No |
+| Error handling | Missing try/catch for async | Sometimes |
+| Console logs | console.log (not .error/.warn) | Yes |
+| Dead code | Commented-out code | Yes |
+| TODOs | TODO without issue link | Yes |
+
+### Architecture (React/Next.js)
+
+| Check | Fail Condition |
+|-------|----------------|
+| Server Components | `'use client'` without justification |
+| Data fetching | Client-side fetch for initial data |
+| Mutations | Not using Server Actions |
+| Bundle safety | Importing server code in client |
+
+### Security (Swiss nFADP)
+
+| Check | Fail Condition | Severity |
+|-------|----------------|----------|
+| Input validation | User input not validated | HIGH |
+| Auth check | Missing authentication | HIGH |
+| Authz check | Missing user ownership check | HIGH |
+| SQL injection | String concatenation in queries | CRITICAL |
+| XSS | Unescaped user content | HIGH |
+| Secrets | Hardcoded credentials | CRITICAL |
+| PII logging | Logging user data | HIGH |
+
+### Testing
+
+| Check | Fail Condition |
+|-------|----------------|
+| Tests exist | New code without tests |
+| Tests pass | Failing tests |
+| Coverage | Major paths not covered |
+
+---
+
+## Comment Templates
+
+### Type Issue
+```markdown
+**Issue:** Using `any` type
+
+**Location:** Line 42
+
+**Problem:** `any` bypasses TypeScript's type checking, hiding potential bugs.
+
+**Fix:**
+```typescript
+// Before
+function process(data: any) { ... }
+
+// After
+function process(data: DocumentUpload) { ... }
+```
 ```
 
-**CRITICAL**: If you ever find yourself about to run `git push origin master`, STOP immediately. This is forbidden. Create a feature branch and PR instead.
+### Missing Error Handling
+```markdown
+**Issue:** Missing error handling
 
-## Claude's PR Approval Authority
+**Location:** Lines 45-50
 
-Claude can approve and merge PRs on behalf of the admin (novacekm) under these conditions:
+**Problem:** Async operation without try/catch. Network failures will crash.
 
-### Automatic Approval Permitted When:
-1. **All CI checks pass** - lint, type-check, test, build
-2. **Code review checklist passes** - no security issues, follows patterns
-3. **Tests are included** - for new functionality
-4. **No "needs-human-review" label** - not flagged for manual review
-5. **PR is from task-loop** - automated overnight work
-
-### Human Review Required When:
-1. Security-sensitive changes (auth, data handling)
-2. Architecture changes (new patterns, major refactors)
-3. Configuration changes (env vars, CI/CD)
-4. Database migrations (schema changes)
-5. Dependency updates (especially major versions)
-6. Any PR with "needs-human-review" label
-
-### Approval Command
-```bash
-# Claude approves on behalf of admin
-gh pr review <number> --approve --body "$(cat <<'EOF'
-## Automated Review: APPROVED
-
-Approved by Claude on behalf of @novacekm.
-
-**Review Summary:**
-- Code quality: Passed
-- Security: No issues found
-- Tests: Included and passing
-- Architecture: Follows patterns
-
-**Approval Authority:** Delegated for automated task-loop execution.
-EOF
-)"
+**Fix:**
+```typescript
+try {
+  const result = await uploadFile(file);
+  return result;
+} catch (error) {
+  logger.error('Upload failed', { error, fileId: file.id });
+  throw new UploadError('Failed to upload file');
+}
 ```
+```
+
+### Security Issue
+```markdown
+**⚠️ Security Issue:** Missing input validation
+
+**Location:** Line 23
+
+**Problem:** User input passed directly to database query without validation.
+
+**Fix:**
+```typescript
+import { z } from 'zod';
+
+const schema = z.object({
+  id: z.string().cuid(),
+  name: z.string().min(1).max(255),
+});
+
+const validated = schema.parse(input);
+```
+
+**Severity:** HIGH - Must fix before merge.
+```
+
+### Suggestion (Non-blocking)
+```markdown
+**Suggestion:** Consider extracting this logic
+
+**Location:** Lines 67-89
+
+This retry logic could be reused. Consider:
+```typescript
+// lib/utils/retry.ts
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3
+): Promise<T> { ... }
+```
+
+*This is a suggestion, not blocking merge.*
+```
+
+---
 
 ## Integration with Task Loop
 
-The task loop invokes this skill after creating a PR:
+After creating a PR, task-loop invokes review:
 
 ```
-[EXECUTE] Implementation complete, PR #15 created
+[EXECUTE] PR #15 created
 
-[REVIEW] Invoking /pr-review 15...
-<review process runs>
+[REVIEW] Running /pr-review 15...
+- Analyzing 5 changed files
+- Found 3 issues:
+  1. src/storage.ts:42 - any type
+  2. src/storage.ts:67 - missing error handling
+  3. src/actions/upload.ts:15 - no validation
 
-[RESULT] PR #15 merged successfully
+[REVIEW] Requesting changes...
 
-[REFLECT] Continuing to next task...
+[FIX] Addressing review comments...
+- Fixed any type → proper StorageConfig type
+- Added error handling with retry
+- Added Zod validation
+
+[VALIDATE] Running npm run pre-pr...
+- ✅ lint passed
+- ✅ type-check passed
+- ✅ tests passed
+- ✅ build passed
+
+[PUSH] Pushing fixes...
+
+[REVIEW] Re-running /pr-review 15...
+- All issues addressed
+- ✅ Approved
+
+[MERGE] PR #15 merged
 ```
 
-## Manual Invocation
+---
 
-You can also use this skill standalone:
+## Safety Requirements
 
-```
+1. **Local CI before every push:**
+   ```bash
+   npm run pre-pr  # MUST pass
+   git push
+   ```
+
+2. **Never skip review:** Even for "small" changes
+
+3. **Address ALL comments:** Don't leave unresolved threads
+
+4. **Re-review after fixes:** Always run `/pr-review` again after pushing fixes
+
+5. **Escalate when uncertain:** Flag for human review if complex
+
+---
+
+## Quick Reference
+
+```bash
+# Review a PR
 /pr-review 15
-```
 
-Or:
-```
-Review PR #15 for me
+# View PR comments
+gh pr view 15 --comments
+
+# View review comments (line-level)
+gh api repos/novacekm/BriefBot/pulls/15/comments
+
+# Reply to a comment
+gh api repos/novacekm/BriefBot/pulls/15/comments/<comment-id>/replies \
+  --method POST -f body="Fixed in latest commit"
+
+# Mark PR ready for re-review
+gh pr comment 15 --body "Addressed all comments. Ready for re-review."
 ```

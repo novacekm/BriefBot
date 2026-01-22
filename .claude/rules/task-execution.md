@@ -1,18 +1,16 @@
 # Task Execution Rules
 
-## CRITICAL: PR-Based Development
+## CRITICAL: PR-Based Development with Review
 
-**Direct pushes to master are FORBIDDEN.** All changes must go through Pull Requests.
-
-1. **NEVER** run `git push origin master`
-2. **ALWAYS** create a feature branch: `issue-<N>-<short-title>`
-3. **ALWAYS** create a PR with `gh pr create`
-4. **ALWAYS** run `npm run pre-pr` before creating PR
-5. **ALWAYS** update README roadmap when closing issues
+**Direct pushes to master are FORBIDDEN.** All changes must:
+1. Go through Pull Requests
+2. Pass code review (with actual review comments, not rubber-stamping)
+3. Pass all CI checks
+4. Have all review comments addressed
 
 ---
 
-## Workflow: Plan → Execute → PR
+## Workflow: Plan → Execute → Review Loop → Merge
 
 ### 1. PLAN
 - Read the GitHub issue
@@ -23,14 +21,75 @@
 - Create feature branch: `git checkout -b issue-<N>-<short-title>`
 - Write tests first (TDD)
 - Implement the feature
-- Run `npm run pre-pr` to validate
+- Run `npm run pre-pr` to validate locally
 
-### 3. PR & MERGE
+### 3. CREATE PR
 - Push branch: `git push -u origin issue-<N>-<short-title>`
 - Create PR: `gh pr create`
-- Wait for CI (all 10 checks must pass)
-- Merge: `gh pr merge --squash --delete-branch`
+
+### 4. REVIEW LOOP (Mandatory)
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   /pr-review ──► Issues? ──► Fix & Push   │
+│        ▲           │              │         │
+│        │           │ No           ▼         │
+│        │           ▼         npm run pre-pr │
+│        │       APPROVE            │         │
+│        │       & MERGE            │         │
+│        └──────────────────────────┘         │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**The review loop:**
+1. Run `/pr-review <N>` - performs actual code review
+2. If issues found:
+   - Reviewer leaves specific comments on the PR
+   - Requests changes via `gh pr review --request-changes`
+3. Address each comment:
+   - Fix the code
+   - Run `npm run pre-pr` (MUST pass before pushing)
+   - Push fixes
+4. Re-run `/pr-review <N>`
+5. Repeat until approved
+
+**NO RUBBER-STAMPING:** Every PR must have actual review with comments on issues found.
+
+### 5. MERGE & CLEANUP
+- After approval: `gh pr merge --squash --delete-branch`
 - Update README roadmap checkbox
+- Close related issues if not auto-closed
+
+---
+
+## Pre-Push Validation (MANDATORY)
+
+Before EVERY push (initial and fix commits):
+
+```bash
+npm run pre-pr
+```
+
+This runs:
+- `npm run lint`
+- `npm run type-check`
+- `npm run build`
+- `npm run test:e2e -- --project=chromium`
+
+**Never push if pre-pr fails.**
+
+---
+
+## Review Requirements
+
+PRs cannot be merged until:
+
+1. **Code review completed** - `/pr-review` has analyzed all changes
+2. **All comments addressed** - No unresolved review threads
+3. **CI passing** - All 10 GitHub Actions checks green
+4. **Local validation** - `npm run pre-pr` passed before final push
 
 ---
 
@@ -51,18 +110,6 @@ Task("Design UI", ux-designer)
 Task("Review security", security)
 ```
 
-**Validation commands:**
-```
-Bash("npm run lint")
-Bash("npm run type-check")
-```
-
-**File reads:**
-```
-Read("component.tsx")
-Read("component.test.tsx")
-```
-
 ### When NOT to Parallelize
 
 - **Sequential dependencies**: Need output from previous step
@@ -71,30 +118,30 @@ Read("component.test.tsx")
 
 ---
 
-## Context Management
-
-For large tasks, use the **Persist → Clear → Execute** pattern:
-
-1. **Persist**: Save plan to `docs/plans/issue-<N>.md`
-2. **Clear**: Run `/clear` to reset context
-3. **Execute**: Read plan file, implement with fresh context
-
-This prevents context exhaustion on complex features.
-
----
-
 ## Quick Reference
 
 ```bash
-# Before PR
-npm run pre-pr
-
 # Create branch
 git checkout -b issue-42-feature-name
 
+# Before ANY push
+npm run pre-pr
+
 # Create PR
+git push -u origin issue-42-feature-name
 gh pr create --title "feat(scope): description"
 
-# Merge after CI passes
+# Review PR (mandatory)
+/pr-review 42
+
+# After fixing review comments
+npm run pre-pr  # Must pass!
+git add . && git commit -m "fix: address review comments"
+git push
+
+# Re-review
+/pr-review 42
+
+# Merge after approval
 gh pr merge --squash --delete-branch
 ```
