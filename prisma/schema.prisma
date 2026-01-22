@@ -10,12 +10,15 @@ datasource db {
   provider = "postgresql"
 }
 
-// User model for authentication (via Supabase)
+// User model for local authentication
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String    // bcrypt hashed password
+  name          String?   // Optional display name
+  emailVerified DateTime? // For future email verification
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   documents Document[]
 
