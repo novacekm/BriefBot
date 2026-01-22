@@ -55,16 +55,18 @@ test.describe("Skeleton Pages - Authenticated Access", () => {
     await expect(page.locator("text=No documents yet")).toBeVisible();
   });
 
-  test("should access document detail page when authenticated", async ({ page }) => {
+  test("should show not found page for non-existent document", async ({ page }) => {
     await registerAndAuthenticate(page, "doc-detail-test");
 
     await page.goto("/documents/test-id-123");
     await expect(page).toHaveURL("/documents/test-id-123");
 
-    // Verify page content
-    await expect(page.locator("h1")).toContainText("Document Details");
-    await expect(page.locator("text=Document ID: test-id-123")).toBeVisible();
-    await expect(page.locator("text=Back to documents")).toBeVisible();
+    // Non-existent document should show not found page
+    await expect(page.locator("h1")).toContainText("Document Not Found");
+    await expect(
+      page.locator("text=The document you're looking for doesn't exist")
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to Documents" })).toBeVisible();
   });
 
   test("should access settings page when authenticated", async ({ page }) => {
@@ -95,13 +97,13 @@ test.describe("Skeleton Pages - Authenticated Access", () => {
     await expect(page).toHaveURL("/settings");
   });
 
-  test("should show back link on document detail page", async ({ page }) => {
+  test("should show back link on not found page", async ({ page }) => {
     await registerAndAuthenticate(page, "back-link-test");
 
     await page.goto("/documents/some-id");
 
-    // Click back to documents
-    await page.click('text=Back to documents');
+    // Not found page should have back to documents link
+    await page.getByRole("link", { name: "Back to Documents" }).click();
     await expect(page).toHaveURL("/documents");
   });
 });
