@@ -17,16 +17,27 @@ Branch protection is now enforced at the GitHub level. **Direct pushes to master
 
 ---
 
-## Required Status Checks
+## Required Status Checks (ALL 10)
 
-Before a PR can be merged, these CI jobs must pass:
+Before a PR can be merged, ALL of these CI jobs must pass:
 
+### Core Checks
 - **Lint** - ESLint checks
 - **Type Check** - TypeScript compilation
-- **Test** - Playwright tests
+- **Test** - Unit tests (vitest)
 - **Build** - Next.js build
 
-PRs are blocked from merging until all checks are green.
+### E2E Tests (5 browsers)
+- **E2E Tests (chromium)** - Chrome browser
+- **E2E Tests (firefox)** - Firefox browser
+- **E2E Tests (webkit)** - Safari browser
+- **E2E Tests (Mobile Chrome)** - Mobile Chrome (Pixel 5)
+- **E2E Tests (Mobile Safari)** - Mobile Safari (iPhone 13)
+
+### Visual Tests
+- **Visual Regression Tests** - Screenshot comparison (Linux baselines)
+
+PRs are blocked from merging until ALL 10 checks are green.
 
 ## Workflow
 
