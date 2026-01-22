@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './tests',
+  // Ignore unit tests (handled by Vitest)
+  testIgnore: ['**/unit/**'],
 
   // Test timeout
   timeout: 30000,

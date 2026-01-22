@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
+  plugins: [react()],
   test: {
     // Exclude Playwright tests (e2e, visual) from vitest
     exclude: [
@@ -10,5 +13,16 @@ export default defineConfig({
     ],
     // Only look in tests/unit for vitest tests
     include: ['tests/unit/**/*.{test,spec}.{ts,tsx}'],
+    // Use jsdom for DOM testing
+    environment: 'jsdom',
+    // Setup file for testing library
+    setupFiles: ['./tests/unit/setup.ts'],
+    // Enable globals for describe, it, expect
+    globals: true,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, '.'),
+    },
   },
 })
