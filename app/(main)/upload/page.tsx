@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -5,14 +9,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Upload Document - BriefBot",
-  description: "Upload a document to extract text and translate",
-};
+import { UploadZone } from "@/components/features/upload";
+import { uploadDocument } from "@/lib/actions/upload";
 
 export default function UploadPage() {
+  const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileSelect = async (file: File) => {
+    setIsUploading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadDocument(formData);
+
+    if (result.success) {
+      router.push(`/documents/${result.documentId}`);
+    } else {
+      setError(result.error);
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <Card className="mx-auto max-w-2xl">
@@ -24,11 +45,12 @@ export default function UploadPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25">
-            <p className="text-sm text-muted-foreground">
-              Upload functionality coming soon
+          <UploadZone onFileSelect={handleFileSelect} isUploading={isUploading} />
+          {error && (
+            <p className="mt-4 text-sm text-destructive" role="alert">
+              {error}
             </p>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
