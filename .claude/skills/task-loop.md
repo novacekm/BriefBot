@@ -27,13 +27,22 @@ git checkout -b issue-<N>-<short-title>
 npm run pre-pr
 ```
 
-### 4. PR & Merge
+### 4. PR & Review Loop
 ```bash
 git push -u origin issue-<N>-<short-title>
 gh pr create --title "type(scope): description"
-# Wait for CI (all 10 checks)
-gh pr merge --squash --delete-branch
 ```
+
+Then run the **review loop**:
+```
+/pr-review <N>
+  │
+  ├─► Issues found? ─► Fix code ─► npm run pre-pr ─► git push ─► /pr-review <N>
+  │                                                                    │
+  └─► No issues ─► Approved ─► gh pr merge --squash --delete-branch ◄──┘
+```
+
+**Every PR must be reviewed with actual comments - no rubber-stamping.**
 
 ### 5. Reflect
 - Update README roadmap (`[ ]` → `[x]`)
