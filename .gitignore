@@ -43,3 +43,4 @@ postgres-data/
 minio-data/
 
 /app/generated/prisma
+test-results/

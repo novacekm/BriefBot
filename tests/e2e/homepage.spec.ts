@@ -10,8 +10,8 @@ test.describe('Homepage', () => {
     // Check main heading
     await expect(page.locator('h1')).toContainText('BriefBot')
 
-    // Check description
-    await expect(page.locator('p')).toContainText('Privacy-first OCR utility')
+    // Check description (use .first() since there are multiple <p> elements)
+    await expect(page.locator('p').first()).toContainText('Privacy-first OCR utility')
   })
 
   test('should be responsive on mobile', async ({ page, isMobile }) => {

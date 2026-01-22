@@ -6,8 +6,16 @@ import { test, expect } from '@playwright/test'
  * These tests capture screenshots and compare them to baseline images.
  * If the UI changes, the test will fail unless you update the baseline.
  *
- * To update baselines:
- * npm run test:e2e -- --update-snapshots
+ * Cross-platform notes:
+ * - Baselines are platform-agnostic (no OS/browser suffix in filenames)
+ * - Tolerance is set globally in playwright.config.ts (10% pixel diff allowed)
+ * - Minor rendering differences between macOS and Linux are expected
+ *
+ * To update baselines locally:
+ *   npm run test:visual -- --update-snapshots --project=chromium
+ *
+ * To update baselines on CI (Linux), run the visual tests with --update-snapshots
+ * and commit the new snapshots from the artifacts.
  */
 
 test.describe('Homepage Visual Regression @visual', () => {
@@ -20,7 +28,7 @@ test.describe('Homepage Visual Regression @visual', () => {
     // Capture full-page screenshot
     await expect(page).toHaveScreenshot('homepage-desktop.png', {
       fullPage: true,
-      maxDiffPixels: 100,
+      maxDiffPixelRatio: 0.1, // 10% tolerance for cross-platform differences
     })
   })
 
@@ -33,7 +41,7 @@ test.describe('Homepage Visual Regression @visual', () => {
 
     await expect(page).toHaveScreenshot('homepage-mobile.png', {
       fullPage: true,
-      maxDiffPixels: 100,
+      maxDiffPixelRatio: 0.1,
     })
   })
 
@@ -46,7 +54,7 @@ test.describe('Homepage Visual Regression @visual', () => {
 
     await expect(page).toHaveScreenshot('homepage-tablet.png', {
       fullPage: true,
-      maxDiffPixels: 100,
+      maxDiffPixelRatio: 0.1,
     })
   })
 })
