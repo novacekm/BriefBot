@@ -27,40 +27,79 @@
 - Push branch: `git push -u origin issue-<N>-<short-title>`
 - Create PR: `gh pr create`
 
-### 4. REVIEW LOOP (Mandatory)
+### 4. WAIT FOR CI (Mandatory - Do NOT skip)
+
+**ALWAYS wait for CI after creating a PR.** This is automatic workflow, not optional.
+
+```bash
+gh pr checks <PR_NUMBER> --watch
+```
+
+**CI monitoring loop:**
+1. After `gh pr create`, immediately run `gh pr checks <N> --watch`
+2. Wait for ALL checks to complete (10 checks total)
+3. If ANY check fails:
+   - Investigate the failure using `gh run view <run-id> --log-failed`
+   - Fix the issue locally
+   - Run `npm run pre-pr` to verify fix
+   - Commit and push the fix
+   - Watch CI again: `gh pr checks <N> --watch`
+4. Repeat until ALL checks pass
+5. Only proceed to review/merge after CI is green
+
+**Never leave a PR with failing CI.** Always fix before moving on.
+
+### 5. REVIEW LOOP (Mandatory)
 
 ```
-┌─────────────────────────────────────────────┐
-│                                             │
-│   /pr-review ──► Issues? ──► Fix & Push   │
-│        ▲           │              │         │
-│        │           │ No           ▼         │
-│        │           ▼         npm run pre-pr │
-│        │       APPROVE            │         │
-│        │       & MERGE            │         │
-│        └──────────────────────────┘         │
-│                                             │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                                                      │
+│   CREATE PR ──► WAIT CI ──► CI Fails? ──► Fix      │
+│       │            │            │           │        │
+│       │            │            │ No        ▼        │
+│       │            ▼            ▼      npm run pre-pr│
+│       │        CI Pass ──► /pr-review       │        │
+│       │            │            │            │        │
+│       │            │      Issues? ──► Fix & Push    │
+│       │            │            │                    │
+│       │            │            │ No                 │
+│       │            ▼            ▼                    │
+│       │        APPROVE & MERGE                       │
+│       └──────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────┘
 ```
 
 **The review loop:**
-1. Run `/pr-review <N>` - performs actual code review
-2. If issues found:
+1. Wait for CI to pass (step 4 - mandatory)
+2. Run `/pr-review <N>` - performs actual code review
+3. If issues found:
    - Reviewer leaves specific comments on the PR
    - Requests changes via `gh pr review --request-changes`
-3. Address each comment:
+4. Address each comment:
    - Fix the code
    - Run `npm run pre-pr` (MUST pass before pushing)
    - Push fixes
-4. Re-run `/pr-review <N>`
-5. Repeat until approved
+   - Wait for CI again
+5. Re-run `/pr-review <N>`
+6. Repeat until approved
 
 **NO RUBBER-STAMPING:** Every PR must have actual review with comments on issues found.
 
-### 5. MERGE & CLEANUP
-- After approval: `gh pr merge --squash --delete-branch`
-- Update README roadmap checkbox
-- Close related issues if not auto-closed
+### 6. APPROVE & MERGE
+
+Once CI passes and review is complete:
+
+```bash
+# Approve the PR
+gh pr review <PR_NUMBER> --approve
+
+# Merge with squash and delete branch
+gh pr merge <PR_NUMBER> --squash --delete-branch
+```
+
+**Post-merge cleanup:**
+- Update README roadmap checkbox if applicable
+- Issues with "Closes #N" are auto-closed
 
 ---
 
@@ -131,17 +170,25 @@ npm run pre-pr
 git push -u origin issue-42-feature-name
 gh pr create --title "feat(scope): description"
 
-# Review PR (mandatory)
+# ALWAYS wait for CI (do not skip!)
+gh pr checks 42 --watch
+
+# If CI fails: fix, push, watch again
+npm run pre-pr
+git add . && git commit -m "fix: address CI failure"
+git push
+gh pr checks 42 --watch
+
+# Review PR (after CI passes)
 /pr-review 42
 
 # After fixing review comments
 npm run pre-pr  # Must pass!
 git add . && git commit -m "fix: address review comments"
 git push
+gh pr checks 42 --watch  # Wait for CI again
 
-# Re-review
-/pr-review 42
-
-# Merge after approval
-gh pr merge --squash --delete-branch
+# Approve and merge after CI passes
+gh pr review 42 --approve
+gh pr merge 42 --squash --delete-branch
 ```
