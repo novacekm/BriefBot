@@ -1,142 +1,73 @@
 # PR Review Skill
 
 > **Invoke with:** `/pr-review <pr-number>`
-> **Purpose:** Thorough PR review with actionable feedback and fix loops
+> **Purpose:** Multi-agent PR review with findings posted directly to GitHub
 
-## Overview
+## What This Does
 
-This skill performs **real code review** - not rubber-stamping. It:
-1. Analyzes every changed file
-2. Leaves specific comments on problematic code
-3. Requests changes when issues are found
-4. Repeats until all issues are addressed
-5. Only approves when quality standards are met
+Spawns multiple specialized agents IN PARALLEL to review the PR from different perspectives. Each agent posts their findings directly to the GitHub PR. This is NOT rubber-stamping.
 
 ---
 
 ## Review Process
 
-### Step 1: Fetch PR Context
+### Step 1: Get PR Context
 
 ```bash
-# Get PR details
-gh pr view <N> --json number,title,body,files,additions,deletions,commits
+# Get PR info
+gh pr view <N> --json number,title,body,files,additions,deletions
 
 # Get the diff
 gh pr diff <N>
 
-# Get linked issue for acceptance criteria
-gh issue view <linked-issue> --json body
+# Get linked issue
+gh issue view <linked-issue-number> --json body
 ```
 
-### Step 2: Analyze Each Changed File
+### Step 2: Spawn Review Agents (PARALLEL)
 
-For EVERY file in the PR, review for:
+Spawn these agents in a SINGLE message to review in parallel.
 
-**Code Quality:**
-- TypeScript: No `any` types, proper typing
-- Functions < 50 lines, single responsibility
-- Clear naming, no magic numbers
-- Error handling present
-- No console.log (except errors)
-- No commented-out code
+> **Note:** The syntax below is pseudo-code. In practice, use the Task tool with `subagent_type` parameter pointing to agents defined in `.claude/agents/`.
 
-**Architecture:**
-- Server Components by default
-- `'use client'` only where needed
-- Server Actions for mutations
-- No sensitive data in client bundles
-
-**Security (Swiss nFADP):**
-- Input validation with Zod
-- Auth/authz checks
-- No SQL injection, XSS risks
-- No secrets in code
-- PII handling compliant
-
-**Testing:**
-- Tests included for new code
-- Edge cases covered
-
-### Step 3: Leave PR Comments
-
-For EACH issue found, leave a **specific comment** on the PR:
-
-**For line-specific issues:**
-```bash
-# Create a review with line comments
-gh api repos/{owner}/{repo}/pulls/<N>/reviews \
-  --method POST \
-  -f event='COMMENT' \
-  -f body='Review in progress...' \
-  -f comments='[
-    {
-      "path": "src/lib/storage.ts",
-      "line": 42,
-      "body": "**Issue:** Using `any` type here.\n\n**Suggestion:** Define a proper type:\n```typescript\ntype StorageConfig = {\n  bucket: string;\n  endpoint: string;\n};\n```"
-    }
-  ]'
+```
+Task("Review PR #<N> for code quality", subagent_type=reviewer)
+Task("Review PR #<N> for security", subagent_type=security)
+Task("Review PR #<N> for architecture", subagent_type=architect)
 ```
 
-**For general issues:**
-```bash
-gh pr comment <N> --body "$(cat <<'EOF'
-## Review Comment
+Each agent:
+1. Reads the PR diff
+2. Analyzes from their domain perspective
+3. Posts findings directly to GitHub PR
 
-**File:** `src/lib/storage.ts`
+### Step 3: Collect & Post Results
 
-**Issue:** Missing error handling for network failures.
-
-**Suggestion:**
-```typescript
-try {
-  await client.putObject(...)
-} catch (error) {
-  if (error instanceof NetworkError) {
-    throw new StorageError('Network unavailable', { cause: error });
-  }
-  throw error;
-}
-```
-EOF
-)"
-```
-
-### Step 4: Request Changes or Approve
-
-**If issues found:**
+**If ANY agent found issues:**
 ```bash
 gh pr review <N> --request-changes --body "$(cat <<'EOF'
 ## Review: Changes Requested
 
-Found **X issues** that need to be addressed before merge.
+Multiple reviewers found issues that need addressing.
 
-### Must Fix
-1. `src/lib/storage.ts:42` - Using `any` type
-2. `src/lib/storage.ts:67` - Missing error handling
-3. `src/actions/upload.ts:15` - No input validation
+See individual comments above for details.
 
-### Suggestions (Optional)
-- Consider extracting the retry logic into a utility
-
-Please address the "Must Fix" items, run `npm run pre-pr`, and push updates.
-
-I'll re-review when ready.
+Please fix and push updates, then request re-review.
 EOF
 )"
 ```
 
-**If all checks pass:**
+**If ALL agents approve:**
 ```bash
+gh pr comment <N> --body "LGTM - All review checks passed."
+
 gh pr review <N> --approve --body "$(cat <<'EOF'
 ## Review: Approved
 
-All review checks passed:
-- ✅ Code quality
-- ✅ Architecture patterns
-- ✅ Security considerations
-- ✅ Tests included
-- ✅ CI passing
+All reviewers passed:
+- Code quality
+- Security & compliance
+- Architecture patterns
 
 Merging.
 EOF
@@ -147,269 +78,164 @@ gh pr merge <N> --squash --auto --delete-branch
 
 ---
 
-## Review-Fix Loop
+## Agent Review Instructions
 
-When changes are requested, the following loop runs:
+### For `reviewer` Agent
 
-```
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│  ┌─────────┐    ┌──────────┐    ┌─────────────┐   │
-│  │ REVIEW  │───►│  ISSUES  │───►│ FIX & PUSH  │   │
-│  └─────────┘    │  FOUND?  │    └─────────────┘   │
-│       ▲         └──────────┘           │          │
-│       │              │                 │          │
-│       │              │ No              ▼          │
-│       │              ▼          ┌───────────┐     │
-│       │         ┌────────┐      │ pre-pr    │     │
-│       │         │APPROVE │      │ (local)   │     │
-│       │         │& MERGE │      └───────────┘     │
-│       │         └────────┘           │          │
-│       │                              ▼          │
-│       └──────────────────────────────┘          │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
+When spawned to review a PR:
 
-### Fix Process
-
-When reviewer leaves comments:
-
-1. **Read all comments:**
+1. **Read the diff**: `gh pr diff <N>`
+2. **Check for**:
+   - `any` types in TypeScript
+   - Functions > 50 lines
+   - Missing error handling
+   - console.log statements
+   - Commented-out code
+   - Unclear naming
+3. **Post findings to GitHub**:
    ```bash
-   gh pr view <N> --comments
-   gh api repos/{owner}/{repo}/pulls/<N>/comments
+   gh pr comment <N> --body "$(cat <<'EOF'
+   ## Code Quality Review
+
+   **File:** `src/lib/storage.ts`
+
+   ### Issues Found
+   - Line 42: Using `any` type - define proper interface
+   - Line 67-120: Function too long (53 lines) - extract helpers
+
+   ### Suggestions
+   - Consider adding JSDoc for public functions
+   EOF
+   )"
+   ```
+4. **If no issues**:
+   ```bash
+   gh pr comment <N> --body "## Code Quality Review\n\nNo issues found."
    ```
 
-2. **Address each issue:**
-   - Fix the code as suggested
-   - If you disagree, reply to the comment explaining why
+### For `security` Agent
 
-3. **Run local validation:**
+When spawned to review a PR:
+
+1. **Read the diff**: `gh pr diff <N>`
+2. **Check for**:
+   - Input validation (Zod schemas)
+   - Auth/authz checks
+   - SQL injection risks
+   - XSS vulnerabilities
+   - Hardcoded secrets
+   - PII handling (Swiss nFADP)
+3. **Post findings to GitHub**:
    ```bash
-   npm run pre-pr  # MUST pass before pushing
+   gh pr comment <N> --body "$(cat <<'EOF'
+   ## Security Review
+
+   ### Issues Found
+   - `src/actions/upload.ts:23` - User input not validated
+   - `src/lib/db.ts:45` - Missing authorization check
+
+   ### nFADP Compliance
+   - PII handling: OK
+   - Data retention: Not applicable
+   EOF
+   )"
+   ```
+4. **If no issues**:
+   ```bash
+   gh pr comment <N> --body "## Security Review\n\nNo security issues found. nFADP compliance: OK"
    ```
 
-4. **Push fixes:**
+### For `architect` Agent
+
+When spawned to review a PR:
+
+1. **Read the diff**: `gh pr diff <N>`
+2. **Check for**:
+   - Server Components used by default
+   - `'use client'` only where needed
+   - Server Actions for mutations
+   - Proper data fetching patterns
+   - No sensitive data in client bundles
+3. **Post findings to GitHub**:
    ```bash
-   git add .
-   git commit -m "fix: address review comments
+   gh pr comment <N> --body "$(cat <<'EOF'
+   ## Architecture Review
 
-   - Fix any types in storage.ts
-   - Add error handling
-   - Add input validation"
-   git push
+   ### Issues Found
+   - `app/upload/page.tsx` - Using client-side fetch for initial data, should use Server Component
+
+   ### Patterns
+   - Server Components: OK
+   - Data fetching: Issue above
+   EOF
+   )"
    ```
-
-5. **Request re-review:**
+4. **If no issues**:
    ```bash
-   gh pr comment <N> --body "Addressed all review comments. Ready for re-review."
+   gh pr comment <N> --body "## Architecture Review\n\nFollows Next.js 15 patterns correctly."
    ```
-
-6. **Reviewer re-runs `/pr-review <N>`**
 
 ---
 
-## Review Checklist
+## Example Invocation
 
-### Code Quality (All Files)
+When you run `/pr-review 21`:
 
-| Check | Fail Condition | Auto-fixable |
-|-------|----------------|--------------|
-| No `any` types | Found `any` or implicit any | Sometimes |
-| Function size | Function > 50 lines | No |
-| Naming | Unclear names, magic numbers | No |
-| Error handling | Missing try/catch for async | Sometimes |
-| Console logs | console.log (not .error/.warn) | Yes |
-| Dead code | Commented-out code | Yes |
-| TODOs | TODO without issue link | Yes |
-
-### Architecture (React/Next.js)
-
-| Check | Fail Condition |
-|-------|----------------|
-| Server Components | `'use client'` without justification |
-| Data fetching | Client-side fetch for initial data |
-| Mutations | Not using Server Actions |
-| Bundle safety | Importing server code in client |
-
-### Security (Swiss nFADP)
-
-| Check | Fail Condition | Severity |
-|-------|----------------|----------|
-| Input validation | User input not validated | HIGH |
-| Auth check | Missing authentication | HIGH |
-| Authz check | Missing user ownership check | HIGH |
-| SQL injection | String concatenation in queries | CRITICAL |
-| XSS | Unescaped user content | HIGH |
-| Secrets | Hardcoded credentials | CRITICAL |
-| PII logging | Logging user data | HIGH |
-
-### Testing
-
-| Check | Fail Condition |
-|-------|----------------|
-| Tests exist | New code without tests |
-| Tests pass | Failing tests |
-| Coverage | Major paths not covered |
-
----
-
-## Comment Templates
-
-### Type Issue
-```markdown
-**Issue:** Using `any` type
-
-**Location:** Line 42
-
-**Problem:** `any` bypasses TypeScript's type checking, hiding potential bugs.
-
-**Fix:**
-```typescript
-// Before
-function process(data: any) { ... }
-
-// After
-function process(data: DocumentUpload) { ... }
 ```
-```
+[CONTEXT] Fetching PR #21...
+- Title: feat(storage): add MinIO integration
+- Files: 5 changed (+245 -12)
 
-### Missing Error Handling
-```markdown
-**Issue:** Missing error handling
+[REVIEW] Spawning review agents in parallel...
 
-**Location:** Lines 45-50
+Task("Review PR #21 code quality", reviewer)
+Task("Review PR #21 security", security)
+Task("Review PR #21 architecture", architect)
 
-**Problem:** Async operation without try/catch. Network failures will crash.
+[WAIT] Agents analyzing...
 
-**Fix:**
-```typescript
-try {
-  const result = await uploadFile(file);
-  return result;
-} catch (error) {
-  logger.error('Upload failed', { error, fileId: file.id });
-  throw new UploadError('Failed to upload file');
-}
-```
-```
+[RESULTS]
+- reviewer: Posted comment - 2 issues found
+- security: Posted comment - No issues
+- architect: Posted comment - 1 issue found
 
-### Security Issue
-```markdown
-**⚠️ Security Issue:** Missing input validation
+[ACTION] Issues found - requesting changes...
+gh pr review 21 --request-changes
 
-**Location:** Line 23
-
-**Problem:** User input passed directly to database query without validation.
-
-**Fix:**
-```typescript
-import { z } from 'zod';
-
-const schema = z.object({
-  id: z.string().cuid(),
-  name: z.string().min(1).max(255),
-});
-
-const validated = schema.parse(input);
-```
-
-**Severity:** HIGH - Must fix before merge.
-```
-
-### Suggestion (Non-blocking)
-```markdown
-**Suggestion:** Consider extracting this logic
-
-**Location:** Lines 67-89
-
-This retry logic could be reused. Consider:
-```typescript
-// lib/utils/retry.ts
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxAttempts = 3
-): Promise<T> { ... }
-```
-
-*This is a suggestion, not blocking merge.*
+[DONE] Review complete. See PR #21 for comments.
 ```
 
 ---
 
-## Integration with Task Loop
+## After Fixes
 
-After creating a PR, task-loop invokes review:
+When author fixes issues and requests re-review:
 
-```
-[EXECUTE] PR #15 created
-
-[REVIEW] Running /pr-review 15...
-- Analyzing 5 changed files
-- Found 3 issues:
-  1. src/storage.ts:42 - any type
-  2. src/storage.ts:67 - missing error handling
-  3. src/actions/upload.ts:15 - no validation
-
-[REVIEW] Requesting changes...
-
-[FIX] Addressing review comments...
-- Fixed any type → proper StorageConfig type
-- Added error handling with retry
-- Added Zod validation
-
-[VALIDATE] Running npm run pre-pr...
-- ✅ lint passed
-- ✅ type-check passed
-- ✅ tests passed
-- ✅ build passed
-
-[PUSH] Pushing fixes...
-
-[REVIEW] Re-running /pr-review 15...
-- All issues addressed
-- ✅ Approved
-
-[MERGE] PR #15 merged
-```
+1. Run `/pr-review <N>` again
+2. Agents re-analyze the updated code
+3. Post new comments or confirm resolution
+4. Approve when all clear
 
 ---
 
 ## Safety Requirements
 
-1. **Local CI before every push:**
-   ```bash
-   npm run pre-pr  # MUST pass
-   git push
-   ```
-
-2. **Never skip review:** Even for "small" changes
-
-3. **Address ALL comments:** Don't leave unresolved threads
-
-4. **Re-review after fixes:** Always run `/pr-review` again after pushing fixes
-
-5. **Escalate when uncertain:** Flag for human review if complex
+1. **Local CI before every push:** Run `npm run pre-pr` and ensure it passes
+2. **Address ALL review comments:** Don't leave unresolved threads
+3. **Re-review after fixes:** Run `/pr-review <N>` again after pushing fixes
+4. **Never skip review:** Even for "small" changes
 
 ---
 
 ## Quick Reference
 
 ```bash
-# Review a PR
-/pr-review 15
+# Review a PR (spawns agents, posts to GitHub)
+/pr-review <N>
 
-# View PR comments
-gh pr view 15 --comments
+# View posted comments
+gh pr view <N> --comments
 
-# View review comments (line-level)
-gh api repos/novacekm/BriefBot/pulls/15/comments
-
-# Reply to a comment
-gh api repos/novacekm/BriefBot/pulls/15/comments/<comment-id>/replies \
-  --method POST -f body="Fixed in latest commit"
-
-# Mark PR ready for re-review
-gh pr comment 15 --body "Addressed all comments. Ready for re-review."
+# After fixes, re-review
+/pr-review <N>
 ```
