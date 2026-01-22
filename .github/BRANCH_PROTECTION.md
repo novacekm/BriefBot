@@ -1,13 +1,32 @@
 # Branch Protection Rules
 
+## CRITICAL: Direct Pushes to Master are FORBIDDEN
+
+This repository enforces a strict PR-based development workflow. **Direct pushes to master are not allowed**, regardless of whether GitHub branch protection is enabled.
+
+### How This is Enforced
+
+1. **Programmatically by Claude** - The `/pr-review` and `/task-loop` skills enforce PR-based workflow
+2. **By Convention** - All developers and AI assistants must follow the PR workflow
+3. **By GitHub Branch Protection** - When available (requires GitHub Pro for private repos)
+
+### What This Means
+
+- **NEVER** run `git push origin master`
+- **ALWAYS** create a feature branch: `git checkout -b issue-<number>-<title>`
+- **ALWAYS** create a PR: `gh pr create`
+- **ALWAYS** get approval before merging (admin or Claude on admin's behalf)
+
+---
+
 ## Note on Private Repositories
 
 GitHub branch protection rules require GitHub Pro for private repositories.
 Until then, the `/pr-review` skill enforces these rules programmatically.
 
-## Intended Rules for Master Branch
+## Branch Protection Rules for Master Branch
 
-When branch protection is available, apply these settings:
+These settings are enforced (programmatically now, by GitHub when available):
 
 ### Required Status Checks
 - [x] Require status checks to pass before merging
@@ -66,7 +85,7 @@ gh api repos/novacekm/BriefBot/branches/master/protection \
   -f restrictions=null
 ```
 
-## Workflow Without Protection
+## Current Workflow (Enforced by Claude)
 
 ```
 Feature Branch → PR → CI Checks → PR Review → Approval → Squash Merge
@@ -75,7 +94,30 @@ Feature Branch → PR → CI Checks → PR Review → Approval → Squash Merge
  git checkout -b              /pr-review    gh pr merge --squash --auto
 ```
 
-The `/pr-review` skill acts as the gate, only approving and merging when:
+**The `/pr-review` skill acts as the gate**, only approving and merging when:
 - All CI checks pass
 - Code quality standards met
 - No security issues found
+
+### Claude's Role in Branch Protection
+
+Since GitHub branch protection requires Pro for private repos, Claude enforces protection programmatically:
+
+1. **Before any push**: Claude checks the target branch
+2. **If target is master**: Claude refuses and creates a feature branch instead
+3. **For PRs**: Claude can approve on behalf of admin when criteria are met
+4. **For merges**: Claude only merges via `gh pr merge`, never direct push
+
+### Admin Approval Delegation
+
+The admin (novacekm) has delegated PR approval authority to Claude for:
+- Automated task-loop PRs where all checks pass
+- Simple changes with no security implications
+- PRs without the "needs-human-review" label
+
+Human review is still required for:
+- Security-sensitive changes
+- Architecture changes
+- Database migrations
+- Configuration changes
+- Any PR flagged for human review

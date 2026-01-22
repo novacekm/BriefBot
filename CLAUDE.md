@@ -154,6 +154,20 @@ See `DEVELOPMENT_FLOW.md` for the complete development process.
 5. **Security** → Verify compliance with `security` agent
 6. **Deploy** → Follow `infra` agent guidelines
 
+### PR-Based Workflow (Required)
+
+**All changes must go through Pull Requests** - no direct pushes to master.
+
+- **Branch protection**: Enforced at GitHub level on the `master` branch
+- **Branch naming**: Use `issue-<N>-<short-title>` convention (e.g., `issue-42-add-ocr-upload`)
+- **PR approval**: Only admin (novacekm) or Claude (via admin's gh CLI credentials) can approve PRs
+- **Workflow**:
+  1. Create a feature branch from `master`
+  2. Make changes and commit
+  3. Push branch and open a PR
+  4. Get PR reviewed and approved
+  5. Merge to `master` (squash or merge commit)
+
 ## Core Principles
 
 ### 1. Privacy-First
