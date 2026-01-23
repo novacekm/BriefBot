@@ -6,7 +6,7 @@ Privacy-first, mobile-web OCR utility for Swiss residents to decode official mai
 
 BriefBot helps Swiss residents quickly understand official correspondence (government letters, tax documents, legal notices) through:
 
-- **OCR Extraction**: Upload photos of documents, get machine-readable text via GPT-4 Vision
+- **Document Understanding**: Upload photos of documents, extract text and structured data via Claude Vision
 - **Translation**: Translate between Swiss national languages (German, French, Italian) and English
 - **Privacy-First**: All processing compliant with Swiss nFADP (Federal Act on Data Protection)
 
@@ -26,12 +26,19 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 - User authentication (NextAuth.js with credentials provider)
 - shadcn/ui component library
 
+### Implemented (POC Complete)
+
+- Document upload with drag-and-drop
+- Document list and detail views
+- Mock OCR with Swiss document samples
+- Status badges and document type detection
+
 ### Not Yet Implemented
 
-- Document upload UI
-- OCR processing
+- Real AI document understanding (Claude Vision)
 - Translation service
-- Document management views
+- Document deletion
+- Background processing queue
 
 ## Roadmap
 
@@ -39,28 +46,37 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 
 ### MVP (P0-critical)
 
-- [x] [#24 Local Authentication with NextAuth.js](https://github.com/novacekm/BriefBot/issues/24) (replaces #1)
+**Completed:**
+- [x] [#24 Local Authentication with NextAuth.js](https://github.com/novacekm/BriefBot/issues/24)
 - [x] [#2 shadcn/ui Component Library Setup](https://github.com/novacekm/BriefBot/issues/2)
 - [x] [#26 MinIO Storage Integration](https://github.com/novacekm/BriefBot/issues/26)
 - [x] [#4 Document Upload UI](https://github.com/novacekm/BriefBot/issues/4)
 - [x] [#5 Document Upload Server Action](https://github.com/novacekm/BriefBot/issues/5)
-- [ ] [#6 OCR Integration with GPT-4 Vision](https://github.com/novacekm/BriefBot/issues/6)
-- [ ] [#7 OCR Processing Queue](https://github.com/novacekm/BriefBot/issues/7)
-- [ ] [#8 Document List View](https://github.com/novacekm/BriefBot/issues/8)
-- [ ] [#9 Document Detail View](https://github.com/novacekm/BriefBot/issues/9)
+- [x] [#60 Document List Page](https://github.com/novacekm/BriefBot/issues/60)
+- [x] [#61 Document Detail Page](https://github.com/novacekm/BriefBot/issues/61)
+- [x] [#28 Mock OCR Service](https://github.com/novacekm/BriefBot/issues/28)
+
+**In Progress:**
+- [ ] [#32 Direct Document Understanding with Claude Vision](https://github.com/novacekm/BriefBot/issues/32) *(architecture updated)*
+- [ ] [#72 Background Job Queue](https://github.com/novacekm/BriefBot/issues/72) *(new)*
+- [ ] [#71 Document Deletion for nFADP Compliance](https://github.com/novacekm/BriefBot/issues/71) *(new - P0 for compliance)*
+- [ ] [#70 Rate Limiting for Auth/Upload](https://github.com/novacekm/BriefBot/issues/70) *(new - security)*
+- [ ] [#33 Translation with Claude](https://github.com/novacekm/BriefBot/issues/33)
 
 ### Post-MVP (P1-high)
 
-- [ ] [#10 Translation with Claude](https://github.com/novacekm/BriefBot/issues/10)
-- [ ] [#11 Document Deletion](https://github.com/novacekm/BriefBot/issues/11)
-- [ ] [#12 E2E Test Suite](https://github.com/novacekm/BriefBot/issues/12)
+- [ ] [#73 Pagination for Documents List](https://github.com/novacekm/BriefBot/issues/73) *(new)*
+- [ ] [#74 PWA Basic Implementation](https://github.com/novacekm/BriefBot/issues/74) *(new)*
+- [ ] [#38 Basic Privacy Compliance (Swiss nFADP)](https://github.com/novacekm/BriefBot/issues/38)
+- [ ] [#37 E2E Test Suite for New Features](https://github.com/novacekm/BriefBot/issues/37)
+- [ ] [#36 Mobile-Responsive UI](https://github.com/novacekm/BriefBot/issues/36)
 
 ### Future (P2-P3)
 
 - [ ] Full-text search across documents
 - [ ] RAG-based Q&A on document content
-- [ ] PWA with offline support
 - [ ] Batch document uploads
+- [ ] Calendar integration for deadlines
 
 ## Tech Stack
 
@@ -71,7 +87,7 @@ BriefBot helps Swiss residents quickly understand official correspondence (gover
 | Database | PostgreSQL 16, Prisma ORM |
 | Storage | MinIO (S3-compatible) |
 | Auth | NextAuth.js (local credentials) |
-| AI/ML | OpenAI GPT-4 Vision, Anthropic Claude |
+| AI/ML | Anthropic Claude (Vision + Text), Vercel AI SDK |
 | Testing | Playwright, Vitest |
 | CI/CD | GitHub Actions |
 
@@ -125,8 +141,7 @@ MINIO_SECRET_KEY="minioadmin"
 # Authentication (NextAuth.js)
 AUTH_SECRET="your-auth-secret"  # Generate with: openssl rand -base64 32
 
-# AI Services
-OPENAI_API_KEY="your-openai-key"
+# AI Services (Claude for document understanding and translation)
 ANTHROPIC_API_KEY="your-anthropic-key"
 ```
 
