@@ -17,6 +17,7 @@ export interface DocumentWithUrl {
   status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
   documentType: string | null;
   errorMessage: string | null;
+  metadata: string | null;
   createdAt: Date;
   updatedAt: Date;
   translations: {
@@ -84,6 +85,7 @@ export async function getDocument(documentId: string): Promise<GetDocumentResult
         status: document.status,
         documentType: document.documentType,
         errorMessage: document.errorMessage,
+        metadata: document.metadata,
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
         translations: document.translations,
